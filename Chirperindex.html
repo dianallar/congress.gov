@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chirper — The Newest Microblog</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Ctext y=%2750%27 x=%2732%27 text-anchor=%27middle%27 font-size=%2748%27%3E%F0%9F%90%A6%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0e0f13;--surface:#16181e;--surface2:#1e2029;--border:#2a2d38;
+  --accent:#4f8ef7;--accent2:#3a7be8;--danger:#e85555;--like:#e8558a;--rt:#45c77a;
+  --text:#e8eaf2;--text2:#8b90a8;--text3:#555a72;
+  --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;}
+/* AUTH */
+#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 60% 40%,#1a2040,var(--bg) 70%);}
+.abox{width:420px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px;}
+.alogo{font-family:var(--fh);font-size:2rem;font-weight:800;color:var(--accent);letter-spacing:-1px;}
+.alogo span{color:var(--text2);font-weight:400;font-size:.9rem;margin-left:6px;}
+.atabs{display:flex;gap:4px;background:var(--bg);border-radius:8px;padding:4px;margin:20px 0 16px;}
+.atab{flex:1;padding:8px;border:none;background:transparent;color:var(--text2);border-radius:6px;cursor:pointer;font-family:var(--fb);font-size:.9rem;font-weight:500;transition:all .2s;}
+.atab.active{background:var(--surface2);color:var(--text);}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:.75rem;color:var(--text2);margin-bottom:5px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;}
+.fg input,.fg textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--fb);font-size:.95rem;outline:none;transition:border-color .2s;}
+.fg input:focus,.fg textarea:focus{border-color:var(--accent);}
+.fg textarea{resize:vertical;min-height:70px;}
+.errmsg{color:var(--danger);font-size:.83rem;margin-top:6px;min-height:18px;}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-family:var(--fb);font-size:.9rem;font-weight:500;transition:all .15s;}
+.btn-p{background:var(--accent);color:#fff;width:100%;justify-content:center;padding:12px;font-size:1rem;}
+.btn-p:hover{background:var(--accent2);}
+.btn-o{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+.btn-o:hover{background:rgba(79,142,247,.1);}
+.btn-s{padding:6px 14px;font-size:.82rem;}
+.btn-f{background:var(--text);color:var(--bg);font-weight:600;}
+.btn-f:hover{background:#c5c9dc;}
+.btn-fg{background:transparent;color:var(--text2);border:1px solid var(--border);}
+.btn-fg:hover{border-color:var(--danger);color:var(--danger);}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-danger:hover{background:#d03f3f;}
+/* LAYOUT */
+#app{display:none;flex-direction:row;min-height:100vh;max-width:1100px;margin:0 auto;}
+/* SIDEBAR */
+.sidebar{width:240px;flex-shrink:0;padding:20px 16px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--border);overflow-y:auto;}
+.slogo{font-family:var(--fh);font-size:1.6rem;font-weight:800;color:var(--accent);letter-spacing:-1px;padding:8px 12px 16px;}
+.nitem{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;color:var(--text2);font-weight:500;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:var(--fb);font-size:.95rem;}
+.nitem:hover{background:var(--surface2);color:var(--text);}
+.nitem.active{color:var(--accent);background:rgba(79,142,247,.08);}
+.nico{font-size:1.1rem;width:22px;text-align:center;}
+.suser{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:var(--surface);transition:background .15s;}
+.suser:hover{background:var(--surface2);}
+.suser-info{flex:1;min-width:0;}
+.suser-name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.suser-handle{font-size:.78rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* MAIN */
+.main-col{flex:1;border-right:1px solid var(--border);display:flex;flex-direction:column;min-width:0;overflow-y:auto;height:100vh;}
+.col-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:rgba(14,15,19,.92);backdrop-filter:blur(12px);z-index:10;}
+.col-hdr h2{font-family:var(--fh);font-size:1.1rem;font-weight:700;}
+.back-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.1rem;padding:6px 8px;border-radius:6px;}
+.back-btn:hover{color:var(--text);background:var(--surface2);}
+/* COMPOSE */
+.compose-box{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:12px;}
+.compose-area{flex:1;}
+.compose-ta{width:100%;background:transparent;border:none;color:var(--text);font-family:var(--fb);font-size:1.05rem;resize:none;outline:none;min-height:60px;line-height:1.5;}
+.compose-ta::placeholder{color:var(--text3);}
+.img-preview-wrap{margin-top:10px;position:relative;min-height:0;}
+.img-preview-wrap:not(.has-img){display:none;}
+.img-preview-wrap.has-img{display:;}
+.img-preview-wrap img{max-height:200px;max-width:100%;border-radius:10px;border:1px solid var(--border);display:block;}
+.rm-img{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;}
+.compose-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.compose-tools{display:flex;align-items:center;gap:10px;}
+.tool-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.1rem;padding:2px 4px;border-radius:6px;}
+.tool-btn:hover{color:var(--accent);}
+.cc{font-size:.82rem;color:var(--text3);}
+.cc.warn{color:#e8a055;}.cc.over{color:var(--danger);}
+/* TWEET CARD */
+.feed{flex:1;}
+.tcard{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:0;transition:background .1s;position:relative;}
+.tcard.clickable:hover{background:rgba(255,255,255,.02);cursor:pointer;}
+.tcard-inner{display:flex;gap:12px;}
+.tbody{flex:1;min-width:0;}
+.thdr{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;justify-content:space-between;width:100%;}
+.tname{font-weight:600;font-size:.95rem;cursor:pointer;display:flex;align-items:center;gap:3px;}
+.tname:hover{text-decoration:underline;}
+.thandle{color:var(--text2);font-size:.88rem;}
+.ttime{color:var(--text3);font-size:.82rem;margin-left:auto;flex-shrink:0;}
+.tmenu-btn{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;padding:4px;border-radius:6px;opacity:0;transition:opacity .15s;margin-left:8px;}
+.ttext{font-size:.98rem;line-height:1.55;margin-bottom:10px;white-space:pre-wrap;word-break:break-word;}
+.ttext .hashtag{color:var(--accent);cursor:pointer;text-decoration:none;}
+.ttext .hashtag:hover{text-decoration:underline;}
+.timg{max-width:100%;max-height:300px;border-radius:10px;border:1px solid var(--border);display:block;margin-bottom:10px;cursor:pointer;}
+.tactions{display:flex;gap:16px;margin-top:4px;}
+.taction{display:flex;align-items:center;gap:5px;color:var(--text3);font-size:.85rem;background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:20px;font-family:var(--fb);transition:all .15s;}
+.taction.like-btn:hover{color:var(--like);background:rgba(232,85,138,.12);}
+.taction.rt-btn:hover{color:var(--rt);background:rgba(69,199,122,.12);}
+.taction.cmt-btn:hover{color:var(--accent);background:rgba(79,142,247,.12);}
+.taction.liked{color:var(--like);}
+.taction.rted{color:var(--rt);}
+.rt-label{font-size:.78rem;color:var(--rt);display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.pin-label{font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.tcard:hover .tmenu-btn{opacity:1;}
+.tmenu-btn:hover{background:var(--surface2);color:var(--text);}
+.tmenu{position:absolute;top:36px;right:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px;z-index:20;min-width:140px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.tmenu-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:.88rem;color:var(--text2);border:none;background:none;width:100%;font-family:var(--fb);text-align:left;}
+.tmenu-item:hover{background:var(--surface2);color:var(--text);}
+.tmenu-item.del{color:var(--danger);}
+.tmenu-item.del:hover{background:rgba(232,85,85,.1);}
+.empty-feed{padding:60px 20px;text-align:center;color:var(--text3);}
+.empty-feed p:first-child{font-size:1.3rem;font-family:var(--fh);color:var(--text2);margin-bottom:6px;}
+/* PROFILE BANNER */
+.pbanner{height:140px;background:linear-gradient(135deg,#1a2a5e,#2d1b69);position:relative;overflow:hidden;cursor:pointer;z-index:1;}
+.pbanner img{width:100%;height:100%;object-fit:cover;display:block;}
+.pbanner-edit{position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;font-size:1.5rem;}
+.pbanner:hover .pbanner-edit{opacity:1;}
+.pinfo{padding:16px 20px 0;position:relative;z-index:2;}
+.pavrow{display:flex;justify-content:space-between;align-items:flex-end;margin-top:-46px;margin-bottom:12px;gap:12px;}
+.pname{font-family:var(--fh);font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:6px;}
+.phandle{color:var(--text2);font-size:.9rem;margin-bottom:8px;}
+.pbio{font-size:.92rem;line-height:1.5;margin-bottom:12px;}
+.pstats{display:flex;gap:20px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.pstat{font-size:.88rem;color:var(--text2);}
+.pstat strong{color:var(--text);}
+.ptabs{display:flex;border-bottom:1px solid var(--border);}
+.ptab{flex:1;padding:14px;text-align:center;font-size:.88rem;font-weight:500;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;transition:all .15s;}
+.ptab.active{color:var(--text);border-bottom-color:var(--accent);}
+/* AVATAR */
+.av{width:42px;height:42px;border-radius:50%;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:700;font-size:1rem;color:var(--accent);overflow:hidden;}
+.av.sm{width:32px;height:32px;font-size:.8rem;}
+.av.lg{width:72px;height:72px;font-size:1.6rem;border:3px solid var(--bg);}
+.av img{width:100%;height:100%;object-fit:cover;display:block;}
+.av-wrap{position:relative;display:inline-block;cursor:pointer;}
+.av-wrap:hover .av-ov{opacity:1;}
+.av-ov{position:absolute;inset:0;background:rgba(0,0,0,.5);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;font-size:1.1rem;pointer-events:none;}
+/* THREAD / COMMENTS */
+.ccompose{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start;background:var(--surface);}
+.ccompose-right{flex:1;display:flex;flex-direction:column;gap:8px;}
+.ccompose textarea{width:100%;background:transparent;border:none;color:var(--text);font-family:var(--fb);font-size:.95rem;resize:none;outline:none;min-height:44px;line-height:1.5;}
+.ccompose textarea::placeholder{color:var(--text3);}
+.ccompose-foot{display:flex;justify-content:flex-end;}
+.cnode{border-bottom:1px solid var(--border);}
+.cnode-inner{display:flex;gap:10px;padding:12px 20px 8px;}
+.cnested{padding-left:52px;border-left:none;}
+.cnested .cnode-inner{padding-left:0;}
+.creply-toggle{background:none;border:none;color:var(--text3);font-size:.8rem;cursor:pointer;padding:0 0 8px 0;font-family:var(--fb);display:flex;align-items:center;gap:4px;}
+.creply-toggle:hover{color:var(--accent);}
+.creply-box{display:none;padding:8px 20px 8px 52px;background:var(--surface);border-bottom:1px solid var(--border);}
+.creply-box.open{display:flex;gap:8px;align-items:flex-start;}
+.creply-box textarea{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:var(--fb);font-size:.88rem;resize:none;outline:none;min-height:36px;}
+.creply-box textarea:focus{border-color:var(--accent);}
+/* RIGHT PANEL */
+.rpanel{width:300px;flex-shrink:0;padding:20px 16px;display:flex;flex-direction:column;gap:16px;}
+.pbox{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.pbox h3{font-family:var(--fh);font-size:.95rem;font-weight:700;margin-bottom:12px;}
+.sug-user{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.sug-user:last-child{border-bottom:none;}
+.sug-info{flex:1;min-width:0;}
+.sug-name{font-size:.88rem;font-weight:600;cursor:pointer;}
+.sug-name:hover{text-decoration:underline;color:var(--accent);}
+.sug-handle{font-size:.78rem;color:var(--text2);}
+/* SEARCH */
+.sbar-wrap{padding:14px 20px;border-bottom:1px solid var(--border);}
+.sbar{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:24px;padding:10px 16px;color:var(--text);font-family:var(--fb);font-size:.92rem;outline:none;transition:border-color .2s;}
+.sbar:focus{border-color:var(--accent);}
+.sres-user{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.sres-user:hover{background:var(--surface2);}
+/* NOTIF BADGE */
+.notif-badge{background:var(--danger);color:#fff;border-radius:50%;font-size:.65rem;font-weight:700;min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;margin-left:auto;}
+/* NOTIFS */
+.nitem2{display:flex;align-items:flex-start;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);font-size:.92rem;cursor:pointer;transition:background .1s;}
+.nitem2:hover{background:var(--surface2);}
+/* TOAST */
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#fff;padding:10px 22px;border-radius:24px;font-size:.88rem;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* LIGHTBOX */
+#lbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;align-items:center;justify-content:center;cursor:pointer;}
+#lbox.open{display:flex;}
+#lbox img{max-width:90vw;max-height:90vh;border-radius:8px;}
+/* CROP MODAL */
+#crop-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;align-items:center;justify-content:center;}
+#crop-modal.open{display:flex;}
+.crop-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:400px;max-width:95vw;display:flex;flex-direction:column;gap:16px;}
+.crop-box h3{font-family:var(--fh);font-size:1.1rem;font-weight:700;}
+.crop-wrap{position:relative;overflow:hidden;background:#000;border-radius:10px;cursor:crosshair;user-select:none;}
+#crop-canvas{display:block;max-width:100%;}
+.crop-ov{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.55);pointer-events:none;border-radius:50%;}
+.crop-ov.banner{border-radius:6px;}
+.crop-acts{display:flex;gap:10px;justify-content:flex-end;}
+/* HASHTAG PAGE */
+.htag-header{padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border);font-size:.9rem;color:var(--text2);}
+.htag-header strong{color:var(--text);font-family:var(--fh);}
+/* ADMIN */
+.admin-row{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);}
+/* BAN */
+.banned-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 50% 40%,#2a0a0a,var(--bg) 70%);text-align:center;padding:40px;}
+.banned-screen h1{font-family:var(--fh);font-size:2.2rem;font-weight:800;color:var(--danger);margin-bottom:12px;}
+.banned-screen p{color:var(--text2);font-size:1rem;line-height:1.6;max-width:400px;}
+.ban-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(232,85,85,.15);border:1px solid var(--danger);color:var(--danger);border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600;}
+.ban-reason-pill{background:rgba(232,85,85,.1);border:1px solid rgba(232,85,85,.3);border-radius:8px;padding:8px 12px;font-size:.82rem;color:var(--text2);margin-top:6px;}
+/* VERIFIED BADGE */
+.vbadge{width:16px;height:16px;vertical-align:middle;flex-shrink:0;display:inline-block;object-fit:contain;}
+.vbadge-lg{width:20px;height:20px;vertical-align:middle;display:inline-block;object-fit:contain;}
+.mbadge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;vertical-align:middle;flex-shrink:0;background:var(--accent);border-radius:50%;font-size:10px;color:#fff;}
+.community-note{background:rgba(79,142,247,.12);border:1px solid var(--accent);border-radius:8px;padding:10px 12px;margin-top:8px;font-size:.85rem;color:var(--text2);}
+.community-note strong{color:var(--accent);font-size:.78rem;text-transform:uppercase;}
+.mod-panel-row{display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--border);}
+.mod-panel-row .btn-s{margin-left:auto;}
+@media(max-width:900px){
+  .rpanel{display:none;}
+  #app{max-width:700px;}
+  .sidebar{width:60px;padding:16px 8px;}
+  .slogo{font-size:1.4rem;padding:8px 8px 16px;}
+  .nitem span:not(.nico){display:none;}
+  .suser-info{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="abox">
+    <div class="alogo">Chirper <span>The Microblog where you can say Anything.</span></div>
+    <div class="atabs">
+      <button class="atab active" onclick="switchTab('login')">Log In</button>
+      <button class="atab" onclick="switchTab('register')">Sign Up</button>
+    </div>
+    <div id="login-form">
+      <form onsubmit="event.preventDefault(); doLogin();">
+        <div class="fg"><label>Username</label><input type="text" id="lu" placeholder="@username"/></div>
+        <div class="fg"><label>Password</label><input type="password" id="lp" placeholder="••••••••"/></div>
+        <div class="errmsg" id="lerr"></div>
+        <button type="submit" class="btn btn-p">Log In</button>
+      </form>
+    </div>
+    <div id="register-form" style="display:none">
+    <div class="fg"><label>Display Name</label><input type="text" id="rn" placeholder="Your Name"/></div>
+    <div class="fg"><label>Username</label><input type="text" id="ru" placeholder="no spaces, no @"/></div>
+    <div class="fg"><label>Mod invite code <span style="text-transform:none;font-weight:400;font-size:.75rem">(optional)</span></label><input type="text" id="rmod" placeholder="Paste code from POTUS"/></div>
+    <div class="fg"><label>Password</label><input type="password" id="rp" placeholder="••••••••"/></div>
+    <div class="fg"><label>Bio <span style="text-transform:none;font-weight:400;font-size:.75rem">(optional)</span></label><textarea id="rb" placeholder="Tell the state who you are…"></textarea></div>      <div class="fg">
+        <label>Profile Picture <span style="text-transform:none;font-weight:400;font-size:.75rem">(optional)</span></label>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+          <div class="av-wrap" id="rpfp-wrap"><div class="av" id="rpfp-prev">?</div><div class="av-ov">📷</div></div>
+          <button type="button" class="btn btn-o btn-s" id="rpfp-btn">Upload Photo</button>
+          <input type="file" id="rpfp-inp" accept="image/*" style="display:none"/>
+        </div>
+      </div>
+      <div class="errmsg" id="rerr"></div>
+      <button class="btn btn-p" onclick="doRegister()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <nav class="sidebar">
+    <div class="slogo">🐦</div>
+    <button class="nitem active" id="nav-home" onclick="navTo('home')"><span class="nico">🏠</span><span>Home</span></button>
+    <button class="nitem" id="nav-search" onclick="navTo('search')"><span class="nico">🔍</span><span>Explore</span></button>
+    <button class="nitem" id="nav-notifs" onclick="navTo('notifs')"><span class="nico">🔔</span><span>Alerts</span><span class="notif-badge" id="notif-badge" style="display:none"></span></button>
+    <button class="nitem" id="nav-profile" onclick="navTo('profile-self')"><span class="nico">👤</span><span>Profile</span></button>
+    <button class="nitem" id="nav-admin" onclick="navTo('admin')" style="display:none"><span class="nico">🛡️</span><span>Admin</span></button>
+    <button class="nitem" id="nav-modpanel" onclick="navTo('modpanel')" style="display:none"><span class="nico">🔨</span><span>Mod Panel</span></button>
+    <button class="nitem" id="nav-settings" onclick="navTo('settings')"><span class="nico">⚙️</span><span>Settings</span></button>
+    <div class="suser" onclick="navTo('profile-self')">
+      <div class="av sm" id="sav"></div>
+      <div class="suser-info"><div class="suser-name" id="sname"></div><div class="suser-handle" id="shandle"></div></div>
+    </div>
+  </nav>
+
+  <div class="main-col">
+    <!-- HOME -->
+    <div id="view-home">
+      <div class="col-hdr"><h2>Home</h2></div>
+      <div class="compose-box">
+        <div class="av" id="cav"></div>
+        <div class="compose-area">
+          <textarea class="compose-ta" id="cta" placeholder="What's happening in the republic?" maxlength="280"></textarea>
+          <div class="img-preview-wrap" id="cimg-wrap">
+            <img id="cimg-el" src="" alt=""/>
+            <button class="rm-img" id="cimg-rm">✕</button>
+          </div>
+          <div class="compose-foot">
+            <div class="compose-tools">
+              <button class="tool-btn" id="cimg-btn" title="Attach image">🖼</button>
+              <input type="file" id="cimg-inp" accept="image/*" style="display:none"/>
+              <span class="cc" id="cc">280</span>
+            </div>
+            <button class="btn btn-p btn-s" style="width:auto" onclick="postTweet()">Post</button>
+          </div>
+        </div>
+      </div>
+      <div class="feed" id="home-feed"></div>
+    </div>
+    <!-- SEARCH -->
+    <div id="view-search" style="display:none">
+      <div class="col-hdr"><h2>Explore</h2></div>
+      <div class="sbar-wrap"><input class="sbar" id="sbar-inp" placeholder="Search citizens or #hashtags…" oninput="doSearch()"/></div>
+      <div id="search-results"></div>
+    </div>
+    <!-- NOTIFICATIONS -->
+    <div id="view-notifs" style="display:none">
+      <div class="col-hdr"><h2>Notifications</h2></div>
+      <div id="notifs-list"></div>
+    </div>
+    <!-- PROFILE -->
+    <div id="view-profile" style="display:none">
+      <div class="col-hdr"><button class="back-btn" onclick="goBack()">&#8592;</button><h2 id="pview-name">Profile</h2></div>
+      <div id="profile-content"></div>
+    </div>
+    <!-- THREAD -->
+    <div id="view-thread" style="display:none">
+      <div class="col-hdr"><button class="back-btn" onclick="goBack()">&#8592;</button><h2>Post</h2></div>
+      <div id="thread-content"></div>
+    </div>
+    <!-- HASHTAG -->
+    <div id="view-hashtag" style="display:none">
+      <div class="col-hdr"><button class="back-btn" onclick="goBack()">&#8592;</button><h2 id="htag-title">#tag</h2></div>
+      <div id="htag-feed"></div>
+    </div>
+    <!-- ADMIN -->
+    <div id="view-admin" style="display:none">
+      <div class="col-hdr"><h2>🛡️ Admin Panel</h2></div>
+      <div style="padding:12px 20px;border-bottom:1px solid var(--border);font-size:.85rem;color:var(--text2)">Manage verified checkmarks. Only accessible to @POTUS.</div>
+      <div id="admin-list"></div>
+    </div>
+    <!-- MOD PANEL -->
+    <div id="view-modpanel" style="display:none">
+      <div class="col-hdr"><h2>🔨 Mod Panel</h2></div>
+      <div style="padding:12px 20px;border-bottom:1px solid var(--border);font-size:.85rem;color:var(--text2)">Ban and unban users. Accessible to moderators and @POTUS.</div>
+      <div id="modpanel-list"></div>
+    </div>
+    <!-- SETTINGS -->
+    <div id="view-settings" style="display:none">
+      <div class="col-hdr"><h2>Settings</h2></div>
+      <div style="padding:24px">
+        <div class="fg"><label>Display Name</label><input type="text" id="set-name"/></div>
+        <div class="fg"><label>Bio</label><textarea id="set-bio"></textarea></div>
+        <div class="fg">
+          <label>Profile Picture</label>
+          <div style="display:flex;align-items:center;gap:14px;margin-top:6px">
+            <div class="av-wrap" id="spfp-wrap"><div class="av lg" id="spfp-prev"></div><div class="av-ov">📷</div></div>
+            <div>
+              <button type="button" class="btn btn-o btn-s" id="spfp-btn">Change Photo</button>
+              <input type="file" id="spfp-inp" accept="image/*" style="display:none"/>
+              <div style="font-size:.78rem;color:var(--text3);margin-top:6px">Click photo or button</div>
+            </div>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Profile Banner</label>
+          <div style="margin-top:6px">
+            <div id="set-banner-preview" style="height:80px;border-radius:10px;background:linear-gradient(135deg,#1a2a5e,#2d1b69);overflow:hidden;margin-bottom:8px;border:1px solid var(--border)"></div>
+            <button type="button" class="btn btn-o btn-s" id="sbanner-btn">Change Banner</button>
+            <input type="file" id="sbanner-inp" accept="image/*" style="display:none"/>
+          </div>
+        </div>
+        <div class="fg"><label>New Password <span style="text-transform:none;font-weight:400;font-size:.75rem">(leave blank to keep)</span></label><input type="password" id="set-pw" placeholder="••••••••"/></div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="btn btn-p" style="width:auto" onclick="saveSettings()">Save</button>
+          <button class="btn btn-o" onclick="doLogout()">Log Out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rpanel">
+    <div class="pbox"><h3>Who to Follow</h3><div id="wtf"></div></div>
+    <div class="pbox"><h3>Trending Tags</h3><div id="trending-tags"></div></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="lbox" onclick="this.classList.remove('open')"><img id="lbox-img" src="" alt=""/></div>
+
+<!-- BAN MODAL -->
+<div id="ban-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:400px;max-width:95vw;display:flex;flex-direction:column;gap:16px;">
+    <h3 style="font-family:var(--fh);font-size:1.1rem;font-weight:700;color:var(--danger)">🔨 Ban User</h3>
+    <p style="font-size:.88rem;color:var(--text2)">Banning <strong id="ban-modal-name" style="color:var(--text)"></strong>. They will be unable to log in or interact.</p>
+    <div class="fg" style="margin-bottom:0">
+      <label>Reason <span style="text-transform:none;font-weight:400;font-size:.75rem">(shown to user)</span></label>
+      <input type="text" id="ban-reason-inp" placeholder="e.g. Violation of state decree…" maxlength="200"/>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-o btn-s" onclick="document.getElementById('ban-modal').style.display='none'">Cancel</button>
+      <button class="btn btn-danger btn-s" style="width:auto" onclick="confirmBan()">Confirm Ban</button>
+    </div>
+  </div>
+</div>
+
+<!-- CROP MODAL -->
+<div id="crop-modal">
+  <div class="crop-box">
+    <h3 id="crop-title">Crop Photo</h3>
+    <div class="crop-wrap" id="crop-wrap"><canvas id="crop-canvas"></canvas><div class="crop-ov" id="crop-ov"></div></div>
+    <div style="font-size:.8rem;color:var(--text3)">Drag to reposition • Scroll to zoom</div>
+    <div class="crop-acts">
+      <button class="btn btn-o btn-s" onclick="cancelCrop()">Cancel</button>
+      <button class="btn btn-p btn-s" style="width:auto" onclick="confirmCrop()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="./firebase-config.js"></script>
+
+<script>
+// ══ DATA ══
+var MAX_TWEETS_STORED = 1500;
+var FIREBASE_CONF = window.CHIRPER_FIREBASE || null;
+var dbCache = {};
+var remoteSaveTimer = null;
+var DB = {
+  mode:'local',
+  firebaseReady:false,
+  fs:null,
+  lastSaveTime:0,
+  init:async function(){
+    var localCache = DB._loadLocalCache();
+    dbCache = localCache;
+    if(!FIREBASE_CONF||!window.firebase){
+      console.log('Firebase not configured, using local storage only.');
+      return;
+    }
+    try{
+      var app=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE_CONF);
+      DB.fs=app.firestore();
+      DB.firebaseReady=true;
+      DB.mode='firebase';
+      console.log('Firebase initialized.');
+      
+      var snap=await DB.fs.collection('chirper').doc('state').get();
+      if(snap.exists){
+        dbCache=snap.data().payload||{};
+        console.log('Loaded data from Firebase.');
+      } else if(Object.keys(localCache).length){
+        dbCache=localCache;
+        await DB.fs.collection('chirper').doc('state').set({payload:dbCache,updatedAt:Date.now()});
+        console.log('Migrated local data to Firebase.');
+      } else {
+        dbCache={};
+      }
+      DB._clearLocalCache();
+    }catch(e){
+      console.warn('Firebase init failed, using local storage.',e);
+      DB.mode='local';
+      DB.firebaseReady=false;
+      dbCache=localCache;
+    }
+  },
+  _loadLocalCache:function(){
+    var out={};
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(!k||k.indexOf('ch_')!==0)continue;
+      try{out[k]=JSON.parse(localStorage.getItem(k));}catch(e){out[k]=null;}
+    }
+    return out;
+  },
+  _clearLocalCache:function(){
+    var keys=[];
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k&&k.indexOf('ch_')===0)keys.push(k);
+    }
+    keys.forEach(function(k){localStorage.removeItem(k);});
+  },
+  _queueRemoteSave:function(){
+    if(!DB.firebaseReady||!DB.fs)return;
+    clearTimeout(remoteSaveTimer);
+    remoteSaveTimer=setTimeout(async function(){
+      try{
+        await DB.fs.collection('chirper').doc('state').set({payload:dbCache,updatedAt:Date.now()},{merge:false});
+        DB.lastSaveTime=Date.now();
+        console.log('Data saved to Firebase.');
+      }
+      catch(e){console.error('Firebase save failed.',e);}
+    },500); // Increased from 250ms to 500ms for stability
+  },
+  g:function(k){
+    var val=Object.prototype.hasOwnProperty.call(dbCache,k)?dbCache[k]:null;
+    return val;
+  },
+  s:function(k,v){
+    dbCache[k]=v;
+    if(DB.mode==='local'){
+      try{localStorage.setItem(k,JSON.stringify(v));}catch(e){
+        console.error('localStorage quota exceeded:',e);
+        // If quota is exceeded, warn user
+        if(e.name==='QuotaExceededError'){
+          console.warn('Storage quota exceeded. Clearing old data.');
+          DB._trimOldData();
+          try{localStorage.setItem(k,JSON.stringify(v));}catch(e2){
+            console.error('Still cannot save:',e2);
+          }
+        }
+      }
+    }
+    DB._queueRemoteSave();
+  },
+  d:function(k){
+    delete dbCache[k];
+    if(DB.mode==='local'){localStorage.removeItem(k);}
+    DB._queueRemoteSave();
+  },
+  // Clear old tweets to prevent quota issues
+  _trimOldData:function(){
+    var tweets=DB.tweets();
+    if(tweets.length>200){
+      tweets=tweets.slice(0,200);
+      DB.setTweets(tweets);
+    }
+  },
+  users:function(){return DB.g('ch_users')||{};},
+  setUsers:function(u){DB.s('ch_users',u);},
+  tweets:function(){return DB.g('ch_tweets')||[];},
+  setTweets:function(t){
+    if(t.length>MAX_TWEETS_STORED){t=t.slice(0,MAX_TWEETS_STORED);}
+    DB.s('ch_tweets',t);
+  },
+  comments:function(tid){return DB.g('ch_cmts_'+tid)||[];},
+  addComment:function(tid,c){var a=DB.comments(tid);a.push(c);DB.s('ch_cmts_'+tid,a);},
+  notifs:function(uid){return DB.g('ch_nf_'+uid)||[];},
+  pushNotif:function(uid,n){var a=DB.notifs(uid);a.unshift(Object.assign({id:uid_gen(),ts:Date.now()},n));DB.s('ch_nf_'+uid,a.slice(0,60));},
+  session:function(){
+    var uid=sessionStorage.getItem('ch_sess'); // FIXED: Changed from localStorage to sessionStorage
+    return uid||null;
+  },
+  setSession:function(uid){sessionStorage.setItem('ch_sess',uid);}, // FIXED: Changed from localStorage to sessionStorage
+  clearSession:function(){sessionStorage.removeItem('ch_sess');}, // FIXED: Changed from localStorage to sessionStorage
+};
+  
+var CU = null; // current user
+var navHistory = [];
+var cropState = {};
+var pendingPfp = {reg:null,settings:null};
+var composeImg = null;
+var activeMenu = null;
+
+// ══ UTILS ══
+function uid_gen(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function timeAgo(ts){var d=(Date.now()-ts)/1000;if(d<60)return Math.floor(d)+'s';if(d<3600)return Math.floor(d/60)+'m';if(d<86400)return Math.floor(d/3600)+'h';return Math.floor(d/86400)+'d';}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2200);}
+function san(s){var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
+function inits(n){if(!n)return'?';return n.split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2);}
+function readFile(f,cb){var r=new FileReader();r.onload=function(e){cb(e.target.result);};r.readAsDataURL(f);}
+// Compress image data URL for storage (max 640px, JPEG 0.75) to avoid quota
+function compressImageForStorage(dataUrl,cb){
+  if(!dataUrl||!dataUrl.match(/^data:image/)){cb(dataUrl);return;}
+  var img=new Image();
+  img.onload=function(){
+    var max=640;var w=img.width;var h=img.height;
+    if(w<=max&&h<=max){cb(dataUrl);return;}
+    if(w>h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}
+    var c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    try{cb(c.toDataURL('image/jpeg',0.75));}catch(e){cb(dataUrl);}
+  };
+  img.onerror=function(){cb(dataUrl);};
+  img.src=dataUrl;
+}
+var VBADGE_URL='https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Twitter_Verified_Badge.svg/960px-Twitter_Verified_Badge.svg.png';
+var VBADGE='<img class="vbadge" src="'+VBADGE_URL+'" alt="Verified">';
+var VBADGE_LG='<img class="vbadge-lg" src="'+VBADGE_URL+'" alt="Verified">';
+var MBADGE='<span class="mbadge" title="Moderator">🛡</span>';
+
+function setAv(el,user,cls){
+  if(!el)return;
+  el.className='av'+(cls?' '+cls:'');
+  el.innerHTML='';
+  if(user&&user.avatar){
+    var i=document.createElement('img');i.src=user.avatar;i.alt=user.name||'';
+    i.onerror=function(){el.innerHTML='';el.textContent=inits(user.name);};
+    el.appendChild(i);
+  } else {el.textContent=inits(user?user.name:null);}
+}
+function mkAv(user,cls){var d=document.createElement('div');setAv(d,user,cls||'');return d;}
+
+// Render text with clickable hashtags
+function renderText(text){
+  var escaped=san(text);
+  return escaped.replace(/#(\w+)/g,'<a class="hashtag" href="#" data-tag="$1">#$1</a>');
+}
+
+// Extract hashtags from text
+function extractTags(text){
+  var tags=[];var m;var re=/#(\w+)/g;
+  while((m=re.exec(text))!==null){tags.push(m[1].toLowerCase());}
+  return tags;
+}
+
+// Close any open menus on click outside
+document.addEventListener('click',function(e){
+  if(activeMenu&&!activeMenu.contains(e.target)){
+    activeMenu.remove();activeMenu=null;
+  }
+});
+
+// ══ CROP ══
+window.cancelCrop=function(){document.getElementById('crop-modal').classList.remove('open');};
+window.confirmCrop=function(){
+  var cs=cropState;
+  var canvas=document.getElementById('crop-canvas');
+  var ov=document.getElementById('crop-ov');
+  var ox=parseInt(ov.style.left),oy=parseInt(ov.style.top),ow=parseInt(ov.style.width),oh=parseInt(ov.style.height);
+  var out=document.createElement('canvas');out.width=ow;out.height=oh;
+  var ctx=out.getContext('2d');
+  if(cs.mode!=='banner'){ctx.beginPath();ctx.arc(ow/2,oh/2,ow/2,0,Math.PI*2);ctx.clip();}
+  ctx.drawImage(cs.img,(ox-cs.x)/cs.scale,(oy-cs.y)/cs.scale,ow/cs.scale,oh/cs.scale,0,0,ow,oh);
+  var b64=out.toDataURL('image/jpeg',.88);
+  document.getElementById('crop-modal').classList.remove('open');
+  if(cs.cb)cs.cb(b64);
+};
+function openCrop(src,mode,cb){
+  cropState={mode:mode||'pfp',cb:cb,scale:1,x:0,y:0,dragging:false};
+  document.getElementById('crop-title').textContent=mode==='banner'?'Crop Banner':'Crop Profile Photo';
+  var ov=document.getElementById('crop-ov');
+  ov.className='crop-ov'+(mode==='banner'?' banner':'');
+  var img=new Image();
+  img.onload=function(){
+    cropState.img=img;
+    var maxW=Math.min(344,window.innerWidth-56);
+    var canvas=document.getElementById('crop-canvas');
+    canvas.width=maxW;canvas.height=mode==='banner'?Math.round(maxW*.33):maxW;
+    var sc=Math.max(canvas.width/img.width,canvas.height/img.height);
+    cropState.scale=sc;cropState.x=(canvas.width-img.width*sc)/2;cropState.y=(canvas.height-img.height*sc)/2;
+    if(mode==='banner'){ov.style.left='4px';ov.style.top='4px';ov.style.width=(canvas.width-8)+'px';ov.style.height=(canvas.height-8)+'px';}
+    else{var s=Math.min(canvas.width,canvas.height)-16;ov.style.left=Math.round((canvas.width-s)/2)+'px';ov.style.top=Math.round((canvas.height-s)/2)+'px';ov.style.width=s+'px';ov.style.height=s+'px';}
+    drawCrop();
+    document.getElementById('crop-modal').classList.add('open');
+  };
+  img.src=src;
+}
+function drawCrop(){
+  var cs=cropState;var canvas=document.getElementById('crop-canvas');
+  var ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(cs.img,cs.x,cs.y,cs.img.width*cs.scale,cs.img.height*cs.scale);
+}
+(function(){
+  var canvas=document.getElementById('crop-canvas');
+  canvas.addEventListener('mousedown',function(e){cropState.dragging=true;cropState.lx=e.clientX;cropState.ly=e.clientY;});
+  document.addEventListener('mouseup',function(){cropState.dragging=false;});
+  document.addEventListener('mousemove',function(e){if(!cropState.dragging||!cropState.img)return;cropState.x+=e.clientX-cropState.lx;cropState.y+=e.clientY-cropState.ly;cropState.lx=e.clientX;cropState.ly=e.clientY;drawCrop();});
+  canvas.addEventListener('wheel',function(e){e.preventDefault();if(!cropState.img)return;cropState.scale*=e.deltaY>0?.9:1.1;cropState.scale=Math.max(.1,Math.min(10,cropState.scale));drawCrop();},{passive:false});
+  canvas.addEventListener('touchstart',function(e){cropState.dragging=true;cropState.lx=e.touches[0].clientX;cropState.ly=e.touches[0].clientY;},{passive:true});
+  document.addEventListener('touchend',function(){cropState.dragging=false;});
+  document.addEventListener('touchmove',function(e){if(!cropState.dragging||!cropState.img)return;cropState.x+=e.touches[0].clientX-cropState.lx;cropState.y+=e.touches[0].clientY-cropState.ly;cropState.lx=e.touches[0].clientX;cropState.ly=e.touches[0].clientY;drawCrop();},{passive:true});
+})();
+
+// ══ FILE INPUTS ══
+function wireInputs(){
+  // Reg pfp
+  var ri=document.getElementById('rpfp-inp');
+  document.getElementById('rpfp-wrap').addEventListener('click',function(){ri.click();});
+  document.getElementById('rpfp-btn').addEventListener('click',function(){ri.click();});
+  ri.addEventListener('change',function(e){
+    var f=e.target.files[0];if(!f)return;
+    readFile(f,function(b64){openCrop(b64,'pfp',function(cr){pendingPfp.reg=cr;setAv(document.getElementById('rpfp-prev'),{name:'',avatar:cr},'');});e.target.value='';});
+  });
+  // Settings pfp
+  var si=document.getElementById('spfp-inp');
+  document.getElementById('spfp-wrap').addEventListener('click',function(){si.click();});
+  document.getElementById('spfp-btn').addEventListener('click',function(){si.click();});
+  si.addEventListener('change',function(e){
+    var f=e.target.files[0];if(!f)return;
+    readFile(f,function(b64){openCrop(b64,'pfp',function(cr){pendingPfp.settings=cr;setAv(document.getElementById('spfp-prev'),{name:'',avatar:cr},'lg');});e.target.value='';});
+  });
+  // Compose img
+  var ci=document.getElementById('cimg-inp');
+  document.getElementById('cimg-btn').addEventListener('click',function(){ci.click();});
+  ci.addEventListener('change',function(e){
+    var f=e.target.files[0];if(!f)return;
+    readFile(f,function(b64){
+      composeImg=b64;
+      var wrap=document.getElementById('cimg-wrap');var el=document.getElementById('cimg-el');
+      el.src=b64; wrap.classList.add('has-img');
+      e.target.value='';
+    });
+  });
+  document.getElementById('cimg-rm').addEventListener('click',function(){
+    composeImg=null;
+    document.getElementById('cimg-el').src='';
+    document.getElementById('cimg-wrap').classList.remove('has-img');
+  });
+  // Settings banner
+  var sbi=document.getElementById('sbanner-inp');
+  document.getElementById('sbanner-btn').addEventListener('click',function(){sbi.click();});
+  sbi.addEventListener('change',function(e){
+    var f=e.target.files[0];if(!f)return;
+    readFile(f,function(b64){openCrop(b64,'banner',function(cr){
+      var us=DB.users();us[CU.id].banner=cr;DB.setUsers(us);CU=DB.users()[CU.id];
+      var prev=document.getElementById('set-banner-preview');
+      prev.innerHTML='<img src="'+cr+'" style="width:100%;height:100%;object-fit:cover">';
+      e.target.value='';
+    });});
+  });
+  // Compose char count
+  document.getElementById('cta').addEventListener('input',function(){
+    var l=280-this.value.length;var cc=document.getElementById('cc');
+    cc.textContent=l;cc.className='cc'+(l<20?' warn':'')+(l<0?' over':'');
+  });
+  // Login enter
+  document.getElementById('lp').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+}
+
+// ══ AUTH ══
+window.switchTab=function(tab){
+  document.getElementById('login-form').style.display=tab==='login'?'':'none';
+  document.getElementById('register-form').style.display=tab==='register'?'':'none';
+  document.querySelectorAll('.atab').forEach(function(b,i){b.classList.toggle('active',(i===0)===(tab==='login'));});
+};
+window.doLogin=function(){
+  var un=document.getElementById('lu').value.trim().replace('@','');
+  var pw=document.getElementById('lp').value;
+  var err=document.getElementById('lerr');
+  var found=null;Object.values(DB.users()).forEach(function(u){if(u.username.toLowerCase()===un.toLowerCase())found=u;});
+  if(!found||found.password!==pw){err.textContent='Invalid username or password.';return;}
+  if(found.banned){err.textContent='This account has been suspended.';return;}
+  err.textContent='';DB.setSession(found.id);launch(found.id);
+};
+window.doRegister=function(){
+  var name=document.getElementById('rn').value.trim();
+  var un=document.getElementById('ru').value.trim().replace('@','');
+  var pw=document.getElementById('rp').value;
+  var bio=document.getElementById('rb').value.trim();
+  var err=document.getElementById('rerr');
+  if(!name||!un||!pw){err.textContent='Name, username and password required.';return;}
+  if(/\s/.test(un)){err.textContent='Username cannot contain spaces.';return;}
+  var users=DB.users();
+  if(Object.values(users).some(function(u){return u.username.toLowerCase()===un.toLowerCase();})){err.textContent='Username taken.';return;}
+  var modCode=document.getElementById('rmod').value.trim();
+  var invites=DB.g('ch_mod_invites')||[];
+  var validInvite=modCode&&invites.indexOf(modCode)>-1;
+  if(validInvite){invites=invites.filter(function(c){return c!==modCode;});DB.s('ch_mod_invites',invites);}
+  var id=uid_gen();
+  var isMod=!!validInvite;
+  users[id]={id:id,name:name,username:un,password:pw,bio:bio,avatar:pendingPfp.reg||'',banner:'',verified:false,following:[],followers:[],pinnedTweet:null,createdAt:Date.now(),blocked:[],role:isMod?'mod':null,modBadge:isMod};
+  DB.setUsers(users);DB.setSession(id);pendingPfp.reg=null;err.textContent='';launch(id);
+};
+window.doLogout=function(){DB.clearSession();location.reload();};
+
+// ══ LAUNCH ══
+function launch(uid){
+  var users=DB.users();CU=users[uid];
+  // Check if banned
+  if(CU.banned){showBannedScreen(CU);return;}
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  var isPotus=CU.username.toLowerCase()==='potus';
+  var isMod=CU.modBadge||CU.role==='mod';
+  document.getElementById('nav-admin').style.display=isPotus?'':'none';
+  document.getElementById('nav-modpanel').style.display=(isPotus||isMod)?'':'none';
+  refreshSidebar();navTo('home');
+  startPolling();
+  if(DB.mode==='firebase'){toast('Connected to Firebase backend.');}
+}
+function refreshSidebar(){
+  var u=DB.users()[CU.id];if(!u)return;CU=u;
+  setAv(document.getElementById('sav'),u,'sm');
+  setAv(document.getElementById('cav'),u,'');
+  document.getElementById('sname').textContent=u.name;
+  document.getElementById('shandle').textContent='@'+u.username;
+  updateNotifBadge();
+}
+
+// ══ NAV ══
+var VIEWS=['home','search','notifs','profile','thread','hashtag','admin','modpanel','settings'];
+window.navTo=function(view,data){
+  data=data||{};
+  _currentView=view;_currentViewData=data;
+  VIEWS.forEach(function(v){var el=document.getElementById('view-'+v);if(el)el.style.display='none';});
+  document.querySelectorAll('.nitem').forEach(function(b){b.classList.remove('active');});
+  if(view==='home'){
+    show('home');act('nav-home');renderFeed();renderWTF();renderTrending();
+  } else if(view==='search'){
+    show('search');act('nav-search');
+    document.getElementById('search-results').innerHTML='';document.getElementById('sbar-inp').value='';
+    renderWTF();
+  } else if(view==='notifs'){
+    show('notifs');act('nav-notifs');renderNotifs();
+  } else if(view==='profile-self'){
+    navHistory.push({v:'profile',uid:CU.id});openProfile(CU.id);
+  } else if(view==='profile'){
+    navHistory.push({v:'profile',uid:data.uid});openProfile(data.uid);
+  } else if(view==='thread'){
+    navHistory.push({v:'thread',tid:data.tid});openThread(data.tid);
+  } else if(view==='hashtag'){
+    navHistory.push({v:'hashtag',tag:data.tag});openHashtag(data.tag);
+  } else if(view==='admin'){
+    show('admin');act('nav-admin');renderAdmin();
+  } else if(view==='modpanel'){
+    show('modpanel');act('nav-modpanel');renderModPanel();
+  } else if(view==='settings'){
+    show('settings');act('nav-settings');
+    var u=DB.users()[CU.id];
+    document.getElementById('set-name').value=u.name;
+    document.getElementById('set-bio').value=u.bio||'';
+    document.getElementById('set-pw').value='';
+    pendingPfp.settings=null;
+    setAv(document.getElementById('spfp-prev'),u,'lg');
+    var bp=document.getElementById('set-banner-preview');
+    if(u.banner){bp.innerHTML='<img src="'+u.banner+'" style="width:100%;height:100%;object-fit:cover">';}
+    else{bp.innerHTML='';}
+  }
+};
+function show(v){document.getElementById('view-'+v).style.display='';}
+function act(id){var el=document.getElementById(id);if(el)el.classList.add('active');}
+window.goBack=function(){
+  navHistory.pop();
+  if(navHistory.length){var p=navHistory[navHistory.length-1];navHistory.pop();navTo(p.v,p);}
+  else navTo('home');
+};
+
+// ══ POST TWEET ══
+window.postTweet=function(){
+  var ta=document.getElementById('cta');
+  var text=ta.value.trim();
+  if(!text&&!composeImg)return;
+  if(text.length>280)return;
+  function doPost(imgData){
+    var tweets=DB.tweets();
+    var newTweet={id:uid_gen(),authorId:CU.id,text:text,image:imgData||null,ts:Date.now(),likes:[],retweets:[],retweetOf:null,pinned:false,communityNotes:[]};
+    tweets.unshift(newTweet);
+    DB.setTweets(tweets);
+    ta.value='';document.getElementById('cc').textContent='280';
+    composeImg=null;document.getElementById('cimg-wrap').classList.remove('has-img');document.getElementById('cimg-el').src='';
+    var users=DB.users();var me=users[CU.id];
+    (me.followers||[]).forEach(function(fid){if(fid!==CU.id){var fu=users[fid];if(fu&&(fu.blocked||[]).indexOf(CU.id)===-1)DB.pushNotif(fid,{type:'post',fromId:CU.id,tweetId:newTweet.id});}});
+    updateNotifBadge();
+    toast('Posted!');renderFeed();
+  }
+  if(composeImg){compressImageForStorage(composeImg,doPost);}else{doPost(null);}
+};
+
+// ══ LIKE ══
+function doLike(tweetId,afterFn){
+  var tweets=DB.tweets();
+  var tw=tweets.filter(function(t){return t.id===tweetId;})[0];if(!tw)return;
+  var idx=tw.likes.indexOf(CU.id);
+  if(idx>-1)tw.likes.splice(idx,1);
+  else{tw.likes.push(CU.id);if(tw.authorId!==CU.id){DB.pushNotif(tw.authorId,{type:'like',fromId:CU.id,tweetId:tweetId});updateNotifBadge();}}
+  DB.setTweets(tweets);if(afterFn)afterFn();
+}
+
+// ══ RETWEET (fixed) ══
+// A user can only have ONE retweet of any given canonical tweet.
+// Clicking RT on a RT-card resolves to the canonical tweet first.
+function doRetweet(inputId,afterFn){
+  var tweets=DB.tweets();
+  // Step 1: find the tweet that was clicked
+  var clicked=null;for(var i=0;i<tweets.length;i++){if(tweets[i].id===inputId){clicked=tweets[i];break;}}
+  if(!clicked)return;
+  // Step 2: resolve to canonical (non-RT) tweet
+  var canonId=clicked.retweetOf?clicked.retweetOf:clicked.id;
+  var canon=null;for(var j=0;j<tweets.length;j++){if(tweets[j].id===canonId){canon=tweets[j];break;}}
+  if(!canon)return;
+  // Step 3: check if current user already has a RT of this canonical tweet
+  var hasRt=canon.retweets.indexOf(CU.id)>-1;
+  if(hasRt){
+    // Un-retweet: remove from canon.retweets and delete the RT post
+    canon.retweets=canon.retweets.filter(function(id){return id!==CU.id;});
+    tweets=tweets.filter(function(t){return!(t.retweetOf===canonId&&t.authorId===CU.id);});
+  } else {
+    // Retweet: add to canon.retweets and create RT post (only if none exists)
+    var alreadyHasPost=tweets.some(function(t){return t.retweetOf===canonId&&t.authorId===CU.id;});
+    if(!alreadyHasPost){
+      canon.retweets.push(CU.id);
+      tweets.unshift({id:uid_gen(),authorId:CU.id,text:canon.text,image:canon.image||null,ts:Date.now(),likes:[],retweets:[],retweetOf:canonId,retweetAuthorId:canon.authorId,pinned:false});
+      if(canon.authorId!==CU.id){DB.pushNotif(canon.authorId,{type:'retweet',fromId:CU.id,tweetId:canonId});updateNotifBadge();}
+    }
+  }
+  DB.setTweets(tweets);if(afterFn)afterFn();
+}
+
+// ══ REAL-TIME POLLING ══
+var _pollTimer=null;
+var _lastPollHash='';
+var _currentView='home';
+var _currentViewData={};
+
+function startPolling(){
+  if(_pollTimer)clearInterval(_pollTimer);
+  _pollTimer=setInterval(async function(){
+    if(!DB.firebaseReady||!DB.fs)return;
+    try{
+      var snap=await DB.fs.collection('chirper').doc('state').get();
+      if(!snap.exists)return;
+      var remote=snap.data().payload||{};
+      // Quick hash: stringify tweets + users length to detect changes
+      var remoteHash=JSON.stringify({tw:(remote.ch_tweets||[]).length,us:Object.keys(remote.ch_users||{}).length,ts:(remote.ch_tweets||[])[0]&&(remote.ch_tweets||[])[0].ts});
+      if(remoteHash===_lastPollHash)return;
+      _lastPollHash=remoteHash;
+      // Merge remote into dbCache (don't overwrite session)
+      Object.keys(remote).forEach(function(k){dbCache[k]=remote[k];});
+      CU=DB.users()[CU.id]||CU;
+      refreshSidebar();
+      refreshCurrentView();
+    }catch(e){}
+  },5000);
+}
+
+function refreshCurrentView(){
+  if(_currentView==='home')renderFeed();
+  else if(_currentView==='notifs')renderNotifs();
+  else if(_currentView==='profile')renderProfile(_currentViewData.uid);
+  else if(_currentView==='thread')renderThread(_currentViewData.tid);
+  else if(_currentView==='hashtag')openHashtag(_currentViewData.tag);
+  else if(_currentView==='modpanel')renderModPanel();
+  else if(_currentView==='admin')renderAdmin();
+}
+
+// ══ DELETE ══
+function deleteTweet(tweetId,afterFn){
+  var tweets=DB.tweets();
+  // Delete the tweet and any RT posts of it by anyone
+  tweets=tweets.filter(function(t){return t.id!==tweetId&&t.retweetOf!==tweetId;});
+  DB.setTweets(tweets);
+  // Also unpin if pinned
+  var users=DB.users();if(users[CU.id]&&users[CU.id].pinnedTweet===tweetId){users[CU.id].pinnedTweet=null;DB.setUsers(users);}
+  if(afterFn)afterFn();
+}
+
+// ══ PIN ══
+function pinTweet(tweetId,afterFn){
+  var users=DB.users();var u=users[CU.id];
+  u.pinnedTweet=u.pinnedTweet===tweetId?null:tweetId;
+  DB.setUsers(users);CU=DB.users()[CU.id];if(afterFn)afterFn();
+}
+
+// ══ FOLLOW ══
+function toggleFollow(targetId,afterFn){
+  var users=DB.users();var me=users[CU.id];var tgt=users[targetId];if(!tgt||targetId===CU.id)return;
+  var idx=(me.following||[]).indexOf(targetId);
+  if(idx>-1){
+    me.following.splice(idx,1);
+    tgt.followers=(tgt.followers||[]).filter(function(id){return id!==CU.id;});
+  } else {
+    if(!me.following)me.following=[];me.following.push(targetId);
+    if(!tgt.followers)tgt.followers=[];tgt.followers.push(CU.id);
+    if(tgt.id!==CU.id)DB.pushNotif(tgt.id,{type:'follow',fromId:CU.id,tweetId:null});
+  }
+  users[CU.id]=me;users[targetId]=tgt;
+  DB.setUsers(users);CU=DB.users()[CU.id];
+  updateNotifBadge();
+  if(afterFn)afterFn();
+}
+
+// ══ BLOCK ══ (updated)
+function toggleBlock(targetId,afterFn){
+  var users=DB.users();var me=users[CU.id];var tgt=users[targetId];if(!tgt)return;
+  var idx=(me.blocked||[]).indexOf(targetId);
+  if(idx>-1){me.blocked=me.blocked.filter(function(id){return id!==targetId;});}
+  else{if(!me.blocked)me.blocked=[];me.blocked.push(targetId);}
+  DB.setUsers(users);CU=DB.users()[CU.id];
+  toast(idx>-1?'Unblocked @'+tgt.username:'Blocked @'+tgt.username);
+  if(afterFn)afterFn();
+}
+
+window.isBlocked=function(uid){
+  var me=DB.users()[CU.id];
+  return me&&(me.blocked||[]).indexOf(uid)>-1?true:false;
+};
+
+window.hasBlockedMe=function(uid){
+  var other=DB.users()[uid];
+  return other&&other.blocked?(other.blocked||[]).indexOf(CU.id)>-1:false;
+};
+
+// ══ PROFILE (updated to prevent viewing blocked profiles) ══
+function openProfile(uid){
+  // Prevent viewing blocked users' profiles
+  if(isBlocked(uid)){
+    var users=DB.users();var tgt=users[uid];
+    var content=document.getElementById('profile-content');content.innerHTML='';
+    var msg=document.createElement('div');msg.style.cssText='padding:40px 20px;text-align:center;color:var(--text3)';
+    msg.innerHTML='<p style="font-size:1.1rem;margin-bottom:16px;color:var(--text2)">You blocked @'+tgt.username+'</p><p>You cannot view this profile while you have them blocked.</p><button class="btn btn-o" onclick="window.goBack()" style="margin-top:16px">Go Back</button>';
+    document.getElementById('profile-content').appendChild(msg);
+    show('profile');
+    return;
+  }
+  VIEWS.forEach(function(v){var el=document.getElementById('view-'+v);if(el)el.style.display='none';});
+  show('profile');renderProfile(uid);
+}
+
+// ══ BUILD TWEET CARD (updated to disable interactions on blocked users) ══
+function buildCard(tweet,users,afterFn,clickable){
+  var author=users[tweet.authorId];if(!author)return document.createElement('div');
+  var me=users[CU.id];
+  // Check if we blocked the author or they blocked us
+  var blockedUser=isBlocked(tweet.authorId);
+  var blockedByUser=hasBlockedMe(tweet.authorId);
+  
+  // Always resolve to canonical tweet for RT state
+  var canonId=tweet.retweetOf?tweet.retweetOf:tweet.id;
+  var canon=null;for(var i=0,tw=DB.tweets();i<tw.length;i++){if(tw[i].id===canonId){canon=tw[i];break;}}
+  if(!canon)canon=tweet;
+  var origAuthor=tweet.retweetOf?(users[tweet.retweetAuthorId]||author):author;
+  var liked=canon.likes.indexOf(CU.id)>-1;
+  var rted=canon.retweets.indexOf(CU.id)>-1;
+  var cmts=DB.comments(canonId);
+  var isOwn=tweet.authorId===CU.id;
+
+  var card=document.createElement('div');
+  card.className='tcard'+(clickable!==false?' clickable':'');
+
+  // Pin label
+  if(tweet.pinned){var pl=document.createElement('div');pl.className='pin-label';pl.innerHTML='📌 Pinned Post';card.appendChild(pl);}
+  // RT label
+  if(tweet.retweetOf){var rl=document.createElement('div');rl.className='rt-label';rl.innerHTML='&#8635; '+(CU.id===tweet.authorId?'You':san(author.name))+' retweeted';card.appendChild(rl);}
+
+  var inner=document.createElement('div');inner.className='tcard-inner';card.appendChild(inner);
+  var avSlot=document.createElement('div');
+  var av=mkAv(origAuthor,'');
+  av.style.cursor='pointer';
+  av.addEventListener('click',function(e){
+    e.stopPropagation();
+    // Prevent clicking on blocked users
+    if(isBlocked(origAuthor.id)){
+      toast('You blocked this user');
+      return;
+    }
+    navTo('profile',{uid:origAuthor.id});
+  });
+  avSlot.appendChild(av);inner.appendChild(avSlot);
+
+  var body=document.createElement('div');body.className='tbody';inner.appendChild(body);
+
+  // Header
+  var hdr=document.createElement('div');hdr.className='thdr';
+  var nameSpan=document.createElement('span');nameSpan.className='tname';
+  nameSpan.innerHTML=san(origAuthor.name)+(origAuthor.verified?VBADGE:'')+(origAuthor.modBadge?MBADGE:'');
+  nameSpan.style.cursor='pointer';
+  nameSpan.addEventListener('click',function(e){
+    e.stopPropagation();
+    // Prevent clicking on blocked users
+    if(isBlocked(origAuthor.id)){
+      toast('You blocked this user');
+      return;
+    }
+    navTo('profile',{uid:origAuthor.id});
+  });
+  var handleSpan=document.createElement('span');handleSpan.className='thandle';handleSpan.textContent='@'+origAuthor.username;
+  var timeSpan=document.createElement('span');timeSpan.className='ttime';timeSpan.textContent=timeAgo(tweet.ts);
+  hdr.appendChild(nameSpan);hdr.appendChild(handleSpan);hdr.appendChild(timeSpan);
+  body.appendChild(hdr);
+
+  // Text with hashtags
+  if(canon.text){
+    var txt=document.createElement('div');txt.className='ttext';txt.innerHTML=renderText(canon.text);
+    txt.querySelectorAll('.hashtag').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();navTo('hashtag',{tag:a.dataset.tag});});});
+    body.appendChild(txt);
+  }
+  // Image
+  if(canon.image){
+    var img=document.createElement('img');img.className='timg';img.src=canon.image;img.alt='Post image';
+    img.addEventListener('click',function(e){e.stopPropagation();document.getElementById('lbox-img').src=canon.image;document.getElementById('lbox').classList.add('open');});
+    body.appendChild(img);
+  }
+  // Community notes
+  var notes=canon.communityNotes||[];
+  if(notes.length>0){
+    var notesWrap=document.createElement('div');notesWrap.className='community-note';
+    notes.forEach(function(n){
+      var mod=users[n.modId];var modName=mod?san(mod.name):'Mod';
+      var p=document.createElement('div');p.innerHTML='<strong>Community note</strong> by '+modName+': '+san(n.text);notesWrap.appendChild(p);
+    });
+    body.appendChild(notesWrap);
+  }
+  // Actions
+  var acts=document.createElement('div');acts.className='tactions';body.appendChild(acts);
+  var cmtBtn=document.createElement('button');cmtBtn.className='taction cmt-btn';cmtBtn.innerHTML='&#128172; <span>'+cmts.length+'</span>';
+  var likeBtn=document.createElement('button');likeBtn.className='taction like-btn'+(liked?' liked':'');likeBtn.innerHTML=(liked?'&#10084;&#65039;':'&#129293;')+' <span>'+canon.likes.length+'</span>';
+  var rtBtn=document.createElement('button');rtBtn.className='taction rt-btn'+(rted?' rted':'');rtBtn.innerHTML='&#8635; <span>'+canon.retweets.length+'</span>';
+  
+  // Disable interactions if user is blocked by you or has blocked you
+  if(blockedUser||blockedByUser){
+    cmtBtn.disabled=true;likeBtn.disabled=true;rtBtn.disabled=true;
+    cmtBtn.style.opacity='0.5';likeBtn.style.opacity='0.5';rtBtn.style.opacity='0.5';
+    cmtBtn.style.cursor='not-allowed';likeBtn.style.cursor='not-allowed';rtBtn.style.cursor='not-allowed';
+    cmtBtn.title='Cannot interact with blocked user';likeBtn.title='Cannot interact with blocked user';rtBtn.title='Cannot interact with blocked user';
+  } else {
+    cmtBtn.addEventListener('click',function(e){e.stopPropagation();navTo('thread',{tid:canonId});});
+    likeBtn.addEventListener('click',function(e){e.stopPropagation();doLike(canonId,afterFn);});
+    rtBtn.addEventListener('click',function(e){e.stopPropagation();doRetweet(tweet.id,afterFn);});
+  }
+  
+  acts.appendChild(cmtBtn);acts.appendChild(likeBtn);acts.appendChild(rtBtn);
+  if(clickable!==false&&!blockedUser&&!blockedByUser)card.addEventListener('click',function(){navTo('thread',{tid:canonId});});
+
+  // 3-dot menu for own tweets (or Remove RT for own RTs)
+  if(isOwn){
+    var menuBtn=document.createElement('button');menuBtn.className='tmenu-btn';menuBtn.textContent='•••';menuBtn.title='More';
+    card.appendChild(menuBtn);
+    menuBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      if(activeMenu){activeMenu.remove();activeMenu=null;}
+      var menu=document.createElement('div');menu.className='tmenu';
+      var isPin=tweet.pinned;
+      var pinItem=document.createElement('button');pinItem.className='tmenu-item';pinItem.innerHTML=(isPin?'📌 Unpin':'📌 Pin to profile');
+      pinItem.addEventListener('click',function(e){e.stopPropagation();menu.remove();activeMenu=null;pinTweet(tweet.id,afterFn);toast(isPin?'Unpinned':'Pinned to profile!');});
+      var delItem=document.createElement('button');delItem.className='tmenu-item del';delItem.innerHTML=tweet.retweetOf?'↺ Remove retweet':'🗑️ Delete post';
+      delItem.addEventListener('click',function(e){
+        e.stopPropagation();menu.remove();activeMenu=null;
+        if(tweet.retweetOf){var tweets=DB.tweets();var canon=tweets.filter(function(t){return t.id===tweet.retweetOf;})[0];if(canon){canon.retweets=canon.retweets.filter(function(id){return id!==CU.id;});tweets=tweets.filter(function(t){return!(t.retweetOf===tweet.retweetOf&&t.authorId===CU.id);});DB.setTweets(tweets);toast('Retweet removed');if(afterFn)afterFn();}}
+        else if(confirm('Delete this post?')){deleteTweet(tweet.id,afterFn);}
+      });
+      menu.appendChild(pinItem);menu.appendChild(delItem);
+      card.appendChild(menu);activeMenu=menu;
+    });
+  }
+  // Mod: Add community note (on any tweet) + quick ban
+  if((me.modBadge||me.role==='mod')&&!isOwn){
+    var noteBtn=document.createElement('button');noteBtn.className='tmenu-btn';noteBtn.textContent='📝';noteBtn.title='Add community note';noteBtn.style.top='14px';noteBtn.style.right='36px';
+    card.appendChild(noteBtn);
+    noteBtn.addEventListener('click',function(e){e.stopPropagation();
+      if(activeMenu){activeMenu.remove();activeMenu=null;}
+      var menu=document.createElement('div');menu.className='tmenu';
+      var noteItem=document.createElement('button');noteItem.className='tmenu-item';noteItem.innerHTML='📝 Add community note';
+      noteItem.addEventListener('click',function(e){e.stopPropagation();menu.remove();activeMenu=null;
+        var text=prompt('Community note (visible to all):');
+        if(!text||!text.trim())return;
+        var tweets=DB.tweets();var tw=null;for(var i=0;i<tweets.length;i++)if(tweets[i].id===canonId){tw=tweets[i];break;}
+        if(tw){if(!tw.communityNotes)tw.communityNotes=[];tw.communityNotes.push({modId:CU.id,modName:CU.name,text:text.trim(),ts:Date.now()});DB.setTweets(tweets);toast('Note added');if(afterFn)afterFn();}
+      });
+      var usrs=DB.users();var tgtUser=usrs[origAuthor.id];
+      var banItem=document.createElement('button');banItem.className='tmenu-item del';
+      banItem.innerHTML=tgtUser&&tgtUser.banned?'✅ Unban @'+san(origAuthor.username):'🔨 Ban @'+san(origAuthor.username);
+      banItem.addEventListener('click',function(e){e.stopPropagation();menu.remove();activeMenu=null;
+        var fresh=DB.users();var tgt=fresh[origAuthor.id];if(!tgt)return;
+        if(tgt.banned){unbanUser(origAuthor.id);if(afterFn)afterFn();}
+        else{openBanModal(origAuthor.id);}
+      });
+      menu.appendChild(noteItem);
+      var isPotus=CU.username.toLowerCase()==='potus';
+      var tgt2=DB.users()[origAuthor.id];
+      var canBan=isPotus||(!(tgt2&&(tgt2.modBadge||tgt2.role==='mod'))&&origAuthor.username.toLowerCase()!=='potus');
+      if(canBan)menu.appendChild(banItem);
+      card.appendChild(menu);activeMenu=menu;
+    });
+  }
+
+  return card;
+}
+// ══ HOME FEED ══
+function renderFeed(){
+  var users=DB.users();var me=users[CU.id];
+  if(!me){console.error('Current user not found');return;}
+  var blocked=(me.blocked||[]).concat([]);
+  
+  var allVisible=DB.tweets().filter(function(t){
+    var aid=t.retweetOf?t.retweetAuthorId:t.authorId;
+    var author=users[aid];
+    // Skip tweets from authors that don't exist, are banned, or are blocked
+    if(!author||author.banned){return false;}
+    if(blocked.indexOf(aid)>-1||window.hasBlockedMe(aid)){return false;}
+    return t.authorId===me.id||me.following.indexOf(t.authorId)>-1;
+  });
+  allVisible.sort(function(a,b){return b.ts-a.ts;});
+
+  // Dedup: never show both an original tweet AND a retweet of the same tweet in the same feed.
+  // Rule: if the canonical original is visible, show only that (not the RT wrapper too).
+  var canonicalsSeen={};
+  var tweets=[];
+  // First pass: collect all canonical (non-RT) IDs that are visible
+  allVisible.forEach(function(t){if(!t.retweetOf)canonicalsSeen[t.id]=true;});
+  // Second pass: include tweet only if it's an original, OR it's a RT whose original isn't visible
+  allVisible.forEach(function(t){
+    if(!t.retweetOf){tweets.push(t);}
+    else if(!canonicalsSeen[t.retweetOf]){tweets.push(t);}
+    // else: the original is already shown — skip this RT wrapper to avoid duplicate
+  });
+  tweets.sort(function(a,b){return b.ts-a.ts;});
+
+  var feed=document.getElementById('home-feed');feed.innerHTML='';
+  if(!tweets.length){feed.innerHTML='<div class="empty-feed"><p>No posts yet</p><p>Follow someone or post something!</p></div>';return;}
+  tweets.forEach(function(t){feed.appendChild(buildCard(t,users,renderFeed,true));});
+}
+
+// ══ WHO TO FOLLOW ══
+function renderWTF(){
+  var users=DB.users();var me=users[CU.id];
+  var sugs=Object.values(users).filter(function(u){
+    if(u.id===me.id||me.following.indexOf(u.id)>-1)return false;
+    if((me.blocked||[]).indexOf(u.id)>-1||(u.blocked||[]).indexOf(me.id)>-1)return false;
+    return true;
+  }).slice(0,5);
+  var el=document.getElementById('wtf');el.innerHTML='';
+  if(!sugs.length){el.innerHTML='<div style="color:var(--text3);font-size:.85rem">Following everyone!</div>';return;}
+  sugs.forEach(function(u){
+    var row=document.createElement('div');row.className='sug-user';
+    row.appendChild(mkAv(u,'sm'));
+    var info=document.createElement('div');info.className='sug-info';
+    var sn=document.createElement('div');sn.className='sug-name';sn.innerHTML=san(u.name)+(u.verified?VBADGE:'')+(u.modBadge?MBADGE:'');sn.addEventListener('click',function(){navTo('profile',{uid:u.id});});
+    var sh=document.createElement('div');sh.className='sug-handle';sh.textContent='@'+u.username;
+    info.appendChild(sn);info.appendChild(sh);row.appendChild(info);
+    var btn=document.createElement('button');btn.className='btn btn-s btn-f';btn.textContent='Follow';
+    btn.addEventListener('click',function(){toggleFollow(u.id,renderWTF);});
+    row.appendChild(btn);el.appendChild(row);
+  });
+}
+
+// ══ TRENDING TAGS ══
+function renderTrending(){
+  var tweets=DB.tweets();var tagCounts={};
+  tweets.forEach(function(t){extractTags(t.text||'').forEach(function(tag){tagCounts[tag]=(tagCounts[tag]||0)+1;});});
+  var sorted=Object.keys(tagCounts).sort(function(a,b){return tagCounts[b]-tagCounts[a];}).slice(0,6);
+  var el=document.getElementById('trending-tags');el.innerHTML='';
+  if(!sorted.length){el.innerHTML='<div style="color:var(--text3);font-size:.82rem">No hashtags yet.</div>';return;}
+  sorted.forEach(function(tag){
+    var row=document.createElement('div');row.style.cssText='padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;';
+    row.innerHTML='<div style="font-weight:600;font-size:.88rem;color:var(--accent)">#'+san(tag)+'</div><div style="font-size:.78rem;color:var(--text3)">'+tagCounts[tag]+' post'+(tagCounts[tag]!==1?'s':'')+'</div>';
+    row.addEventListener('click',function(){navTo('hashtag',{tag:tag});});
+    el.appendChild(row);
+  });
+}
+
+// ══ HASHTAG PAGE ══
+function openHashtag(tag){
+  VIEWS.forEach(function(v){var el=document.getElementById('view-'+v);if(el)el.style.display='none';});
+  show('hashtag');
+  document.getElementById('htag-title').textContent='#'+tag;
+  var users=DB.users();var tweets=DB.tweets().filter(function(t){return extractTags(t.text||'').indexOf(tag)>-1&&!t.retweetOf;});
+  tweets.sort(function(a,b){return b.ts-a.ts;});
+  var feed=document.getElementById('htag-feed');feed.innerHTML='';
+  feed.innerHTML='<div class="htag-header"><strong>#'+san(tag)+'</strong> — '+tweets.length+' post'+(tweets.length!==1?'s':'')+'</div>';
+  if(!tweets.length){feed.innerHTML+='<div class="empty-feed"><p>No posts yet</p></div>';return;}
+  tweets.forEach(function(t){feed.appendChild(buildCard(t,users,function(){openHashtag(tag);},true));});
+}
+
+// ══ THREAD / COMMENTS ══
+function openThread(tid){
+  VIEWS.forEach(function(v){var el=document.getElementById('view-'+v);if(el)el.style.display='none';});
+  show('thread');renderThread(tid);
+}
+function renderThread(tid){
+  var users=DB.users();var tweets=DB.tweets();
+  var tweet=tweets.filter(function(t){return t.id===tid;})[0];if(!tweet)return;
+  var canonId=tweet.retweetOf?tweet.retweetOf:tid;
+  var canon=tweets.filter(function(t){return t.id===canonId;})[0]||tweet;
+  var container=document.getElementById('thread-content');container.innerHTML='';
+  container.appendChild(buildCard(canon,users,function(){renderThread(tid);},false));
+
+  // Mod: Add community note (thread view) + ban
+  var me=DB.users()[CU.id];
+  if((me.modBadge||me.role==='mod')&&canon.authorId!==CU.id){
+    var noteDiv=document.createElement('div');noteDiv.style.cssText='padding:8px 20px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap;';
+    var noteInp=document.createElement('input');noteInp.placeholder='Add a community note…';noteInp.style.flex='1';noteInp.className='sbar';noteInp.style.padding='8px 12px';
+    var noteSb=document.createElement('button');noteSb.className='btn btn-p btn-s';noteSb.textContent='Add note';
+    noteSb.addEventListener('click',function(){
+      var text=noteInp.value.trim();if(!text)return;
+      var tweets=DB.tweets();var tw=null;for(var i=0;i<tweets.length;i++)if(tweets[i].id===canonId){tw=tweets[i];break;}
+      if(tw){if(!tw.communityNotes)tw.communityNotes=[];tw.communityNotes.push({modId:CU.id,modName:CU.name,text:text,ts:Date.now()});DB.setTweets(tweets);noteInp.value='';toast('Note added');renderThread(tid);}
+    });
+    var tgtUser2=DB.users()[canon.authorId];
+    var isPotus2=CU.username.toLowerCase()==='potus';
+    var canBanThread=isPotus2||(!(tgtUser2&&(tgtUser2.modBadge||tgtUser2.role==='mod'))&&canon.authorId.toLowerCase()!=='potus1');
+    if(canBanThread){
+      var threadBanBtn=document.createElement('button');
+      threadBanBtn.className='btn btn-s '+(tgtUser2&&tgtUser2.banned?'btn-o':'btn-danger');
+      threadBanBtn.style.width='auto';
+      threadBanBtn.textContent=tgtUser2&&tgtUser2.banned?'Unban User':'🔨 Ban User';
+      threadBanBtn.addEventListener('click',function(){
+        var fresh=DB.users();var tu=fresh[canon.authorId];if(!tu)return;
+        if(tu.banned){unbanUser(canon.authorId);renderThread(tid);}
+        else{openBanModal(canon.authorId);}
+      });
+      noteDiv.appendChild(threadBanBtn);
+    }
+    noteDiv.appendChild(noteInp);noteDiv.appendChild(noteSb);container.appendChild(noteDiv);
+  }
+
+  // Top-level reply compose
+  var me=DB.users()[CU.id];
+  var box=document.createElement('div');box.className='ccompose';
+  box.appendChild(mkAv(me,'sm'));
+  var right=document.createElement('div');right.className='ccompose-right';
+  var ta=document.createElement('textarea');ta.placeholder='Post a reply…';right.appendChild(ta);
+  var foot=document.createElement('div');foot.className='ccompose-foot';
+  var rb=document.createElement('button');rb.className='btn btn-p btn-s';rb.style.width='auto';rb.textContent='Reply';
+  rb.addEventListener('click',function(){
+    var txt=ta.value.trim();if(!txt)return;
+    DB.addComment(canonId,{id:uid_gen(),authorId:CU.id,text:txt,parentId:null,ts:Date.now()});
+    if(canon.authorId!==CU.id)DB.pushNotif(canon.authorId,{type:'comment',fromId:CU.id,tweetId:canonId});
+    ta.value='';renderThread(tid);
+  });
+  foot.appendChild(rb);right.appendChild(foot);box.appendChild(right);container.appendChild(box);
+
+  // Render comment tree
+  var allCmts=DB.comments(canonId);
+  if(!allCmts.length){
+    var empty=document.createElement('div');empty.className='empty-feed';empty.innerHTML='<p>No replies yet</p><p>Be the first to reply.</p>';container.appendChild(empty);return;
+  }
+  var lbl=document.createElement('div');lbl.style.cssText='padding:10px 20px;font-size:.82rem;color:var(--text3);border-bottom:1px solid var(--border)';
+  lbl.textContent=allCmts.length+' '+(allCmts.length===1?'reply':'replies');container.appendChild(lbl);
+
+  function buildCmtNode(cmt,depth){
+    var cu=users[cmt.authorId];if(!cu)return null;
+    var vb=cu.verified?VBADGE:'';
+    var wrapper=document.createElement('div');wrapper.className='cnode';
+    if(depth>0){wrapper.className='cnested cnode';wrapper.style.borderLeft='2px solid var(--border)';wrapper.style.marginLeft=(depth*44)+'px';}
+
+    var inner=document.createElement('div');inner.className='cnode-inner';
+    var av=mkAv(cu,'sm');av.style.cursor='pointer';av.addEventListener('click',function(){navTo('profile',{uid:cu.id});});
+    inner.appendChild(av);
+
+    var body=document.createElement('div');body.style.cssText='flex:1;min-width:0;';
+    body.innerHTML='<div class="thdr"><span class="tname" style="cursor:pointer">'+san(cu.name)+vb+'</span><span class="thandle">@'+san(cu.username)+'</span><span class="ttime">'+timeAgo(cmt.ts)+'</span></div>';
+    var ctxt=document.createElement('div');ctxt.className='ttext';ctxt.style.marginBottom='4px';ctxt.textContent=cmt.text;
+    body.appendChild(ctxt);
+    body.querySelector('.tname').addEventListener('click',function(){navTo('profile',{uid:cu.id});});
+
+    // Like button for replies
+    var cmtLiked=(cmt.likes||[]).indexOf(CU.id)>-1;
+    var cmtLikeBtn=document.createElement('button');
+    cmtLikeBtn.className='taction like-btn'+(cmtLiked?' liked':'');
+    cmtLikeBtn.style.cssText='font-size:.8rem;padding:2px 6px;margin-bottom:4px;';
+    cmtLikeBtn.innerHTML=(cmtLiked?'&#10084;&#65039;':'&#129293;')+' <span>'+(cmt.likes||[]).length+'</span>';
+    cmtLikeBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      var allC=DB.comments(canonId);
+      var ci=allC.findIndex(function(c){return c.id===cmt.id;});
+      if(ci===-1)return;
+      if(!allC[ci].likes)allC[ci].likes=[];
+      var li=allC[ci].likes.indexOf(CU.id);
+      if(li>-1){allC[ci].likes.splice(li,1);}
+      else{allC[ci].likes.push(CU.id);if(allC[ci].authorId!==CU.id)DB.pushNotif(allC[ci].authorId,{type:'like',fromId:CU.id,tweetId:canonId});updateNotifBadge();}
+      DB.s('ch_cmts_'+canonId,allC);
+      renderThread(tid);
+    });
+    body.appendChild(cmtLikeBtn);
+
+    // Reply toggle button
+    var children=allCmts.filter(function(c){return c.parentId===cmt.id;});
+    var rtoggle=document.createElement('button');rtoggle.className='creply-toggle';
+    rtoggle.innerHTML='&#128172; Reply'+(children.length?' ('+children.length+')':'');
+    body.appendChild(rtoggle);
+    inner.appendChild(body);wrapper.appendChild(inner);
+
+    // Inline reply box
+    var replyBox=document.createElement('div');replyBox.className='creply-box';
+    replyBox.style.paddingLeft=(depth*44+20)+'px';
+    var rInner=document.createElement('div');rInner.style.cssText='display:flex;gap:8px;align-items:flex-start;width:100%;';
+    rInner.appendChild(mkAv(me,'sm'));
+    var rta=document.createElement('textarea');rta.placeholder='Reply to @'+cu.username+'…';
+    var rBtn=document.createElement('button');rBtn.className='btn btn-p btn-s';rBtn.style.width='auto';rBtn.textContent='Reply';
+    rBtn.addEventListener('click',function(){
+      var txt=rta.value.trim();if(!txt)return;
+      DB.addComment(canonId,{id:uid_gen(),authorId:CU.id,text:txt,parentId:cmt.id,ts:Date.now()});
+      if(cmt.authorId!==CU.id)DB.pushNotif(cmt.authorId,{type:'comment',fromId:CU.id,tweetId:canonId});
+      rta.value='';renderThread(tid);
+    });
+    rInner.appendChild(rta);rInner.appendChild(rBtn);replyBox.appendChild(rInner);wrapper.appendChild(replyBox);
+    rtoggle.addEventListener('click',function(){
+      var open=replyBox.classList.toggle('open');replyBox.style.display=open?'':'none';
+      if(!open)replyBox.style.display='none'; // ensure hidden when closed
+      else{replyBox.style.display='';rta.focus();}
+    });
+
+    // Child comments
+    if(children.length>0){
+      children.sort(function(a,b){return a.ts-b.ts;}).forEach(function(child){
+        var node=buildCmtNode(child,depth+1);if(node)wrapper.appendChild(node);
+      });
+    }
+    return wrapper;
+  }
+
+  var roots=allCmts.filter(function(c){return!c.parentId;}).sort(function(a,b){return b.ts-a.ts;});
+  roots.forEach(function(c){var node=buildCmtNode(c,0);if(node)container.appendChild(node);});
+}
+
+// ══ PROFILE ══
+function openProfile(uid){
+  VIEWS.forEach(function(v){var el=document.getElementById('view-'+v);if(el)el.style.display='none';});
+  show('profile');renderProfile(uid);
+}
+function renderProfile(uid){
+  var users=DB.users();var u=users[uid];if(!u)return;
+  var me=users[CU.id];var isMe=uid===me.id;var isF=me.following.indexOf(uid)>-1;
+  document.getElementById('pview-name').textContent=u.name;
+  var allTweets=DB.tweets();
+  // Own posts (no RT) + RTs authored by this user
+  var posts=allTweets.filter(function(t){return t.authorId===uid&&!t.retweetOf;});
+  var rts=allTweets.filter(function(t){return t.authorId===uid&&t.retweetOf;});
+  posts.sort(function(a,b){return b.ts-a.ts;});rts.sort(function(a,b){return b.ts-a.ts;});
+
+  var content=document.getElementById('profile-content');content.innerHTML='';
+
+  // Banner
+  var banner=document.createElement('div');banner.className='pbanner';
+  if(u.banner){var bi=document.createElement('img');bi.src=u.banner;banner.appendChild(bi);}
+  var bedit=document.createElement('div');bedit.className='pbanner-edit';bedit.innerHTML='📷 Change Banner';
+  banner.appendChild(bedit);
+  if(isMe){
+    var bInp=document.createElement('input');bInp.type='file';bInp.accept='image/*';bInp.style.display='none';
+    banner.appendChild(bInp);
+    banner.addEventListener('click',function(){bInp.click();});
+    bInp.addEventListener('change',function(e){
+      var f=e.target.files[0];if(!f)return;e.target.value='';
+      readFile(f,function(b64){openCrop(b64,'banner',function(cr){var us=DB.users();us[CU.id].banner=cr;DB.setUsers(us);CU=DB.users()[CU.id];renderProfile(uid);});e.target.value='';});
+    });
+  } else {banner.style.cursor='default';}
+  content.appendChild(banner);
+
+  // Info
+  var info=document.createElement('div');info.className='pinfo';content.appendChild(info);
+  var avRow=document.createElement('div');avRow.className='pavrow';
+  var pav=document.createElement('div');setAv(pav,u,'lg');
+
+  if(isMe){
+    // Clickable avatar upload on profile
+    var avWrap=document.createElement('div');avWrap.className='av-wrap';avWrap.style.cursor='pointer';
+    avWrap.appendChild(pav);var avOv=document.createElement('div');avOv.className='av-ov';avOv.textContent='📷';avWrap.appendChild(avOv);
+    var avInp=document.createElement('input');avInp.type='file';avInp.accept='image/*';avInp.style.display='none';avWrap.appendChild(avInp);
+    avWrap.addEventListener('click',function(){avInp.click();});
+    avInp.addEventListener('change',function(e){
+      var f=e.target.files[0];if(!f)return;e.target.value='';
+      readFile(f,function(b64){openCrop(b64,'pfp',function(cr){var us=DB.users();us[CU.id].avatar=cr;DB.setUsers(us);CU=DB.users()[CU.id];refreshSidebar();renderProfile(uid);});e.target.value='';});
+    });
+    avRow.appendChild(avWrap);
+    var editBtn=document.createElement('button');editBtn.className='btn btn-s btn-o';editBtn.textContent='Edit Profile';editBtn.addEventListener('click',function(){navTo('settings');});
+    avRow.appendChild(editBtn);
+  } else {
+    avRow.appendChild(pav);
+    var isBl=isBlocked(uid);
+    var blockBtn=document.createElement('button');blockBtn.className='btn btn-s btn-fg';blockBtn.textContent=isBl?'Unblock':'Block';blockBtn.style.marginLeft='8px';
+    blockBtn.addEventListener('click',function(){toggleBlock(uid,function(){renderProfile(uid);});});
+    var fBtn=document.createElement('button');fBtn.className='btn btn-s '+(isF?'btn-fg':'btn-f');fBtn.textContent=isF?'Following':'Follow';fBtn.style.marginLeft='auto';
+    fBtn.addEventListener('click',function(){toggleFollow(uid,function(){renderProfile(uid);});});avRow.appendChild(fBtn);avRow.appendChild(blockBtn);
+    // Mod/POTUS ban button on profile
+    var isPotus=CU.username.toLowerCase()==='potus';
+    var isMod2=CU.modBadge||CU.role==='mod';
+    var canBanFromProfile=(isPotus||(isMod2&&u.role!=='mod'&&!u.modBadge))&&u.username.toLowerCase()!=='potus';
+    if(canBanFromProfile){
+      var profileBanBtn=document.createElement('button');
+      profileBanBtn.className='btn btn-s '+(u.banned?'btn-o':'btn-danger');
+      profileBanBtn.style.marginLeft='8px';
+      profileBanBtn.textContent=u.banned?'Unban':'🔨 Ban';
+      profileBanBtn.addEventListener('click',function(){
+        if(u.banned){unbanUser(uid);renderProfile(uid);}
+        else{openBanModal(uid);}
+      });
+      avRow.appendChild(profileBanBtn);
+    }
+  }
+  info.appendChild(avRow);
+
+  var nameEl=document.createElement('div');nameEl.className='pname';
+  nameEl.innerHTML=san(u.name)+(u.verified?VBADGE_LG:'')+(u.modBadge?MBADGE:'')+(u.banned?'<span class="ban-badge" style="font-size:.8rem;padding:3px 10px">🔨 Banned</span>':'');
+  info.appendChild(nameEl);
+  var handleEl=document.createElement('div');handleEl.className='phandle';handleEl.textContent='@'+u.username;info.appendChild(handleEl);
+  if(u.bio){var bioEl=document.createElement('div');bioEl.className='pbio';bioEl.textContent=u.bio;info.appendChild(bioEl);}
+  var stats=document.createElement('div');stats.className='pstats';
+  stats.innerHTML='<span class="pstat"><strong>'+posts.length+'</strong> Posts</span><span class="pstat"><strong>'+(u.following||[]).length+'</strong> Following</span><span class="pstat"><strong>'+(u.followers||[]).length+'</strong> Followers</span>';
+  info.appendChild(stats);
+
+  // Tabs
+  var tabs=document.createElement('div');tabs.className='ptabs';
+  var t1=document.createElement('div');t1.className='ptab active';t1.textContent='Posts';
+  var t2=document.createElement('div');t2.className='ptab';t2.textContent='Retweets';
+  var t3=document.createElement('div');t3.className='ptab';t3.textContent='Likes';
+  tabs.appendChild(t1);tabs.appendChild(t2);tabs.appendChild(t3);content.appendChild(tabs);
+
+  var pf=document.createElement('div');content.appendChild(pf);
+
+  function showPosts(){
+    t1.className='ptab active';t2.className='ptab';t3.className='ptab';pf.innerHTML='';
+    // Show pinned first if any
+    var pinned=u.pinnedTweet?posts.filter(function(t){return t.id===u.pinnedTweet;})[0]:null;
+    if(pinned){var pc=buildCard(Object.assign({},pinned,{pinned:true}),users,function(){renderProfile(uid);},true);pf.appendChild(pc);}
+    var rest=posts.filter(function(t){return t.id!==u.pinnedTweet;});
+    if(!rest.length&&!pinned){pf.innerHTML='<div class="empty-feed"><p>No posts yet</p></div>';return;}
+    rest.forEach(function(t){pf.appendChild(buildCard(t,users,function(){renderProfile(uid);},true));});
+  }
+  function showRts(){
+    t1.className='ptab';t2.className='ptab active';t3.className='ptab';pf.innerHTML='';
+    if(!rts.length){pf.innerHTML='<div class="empty-feed"><p>No retweets yet</p></div>';return;}
+    rts.forEach(function(t){pf.appendChild(buildCard(t,users,function(){renderProfile(uid);},true));});
+  }
+  function showLikes(){
+    t1.className='ptab';t2.className='ptab';t3.className='ptab active';pf.innerHTML='';
+    var liked=allTweets.filter(function(t){return (t.likes||[]).indexOf(uid)>-1&&!t.retweetOf;}).sort(function(a,b){return b.ts-a.ts;});
+    if(!liked.length){pf.innerHTML='<div class="empty-feed"><p>No liked posts yet</p></div>';return;}
+    liked.forEach(function(t){pf.appendChild(buildCard(t,users,function(){renderProfile(uid);},true));});
+  }
+  t1.addEventListener('click',showPosts);t2.addEventListener('click',showRts);t3.addEventListener('click',showLikes);
+  showPosts();
+}
+
+// ══ SEARCH ══
+window.doSearch=function(){
+  var q=document.getElementById('sbar-inp').value.toLowerCase().trim();
+  var results=document.getElementById('search-results');results.innerHTML='';if(!q)return;
+  // Hashtag search
+  if(q.startsWith('#')){
+    var tag=q.slice(1);if(!tag)return;
+    results.innerHTML='<div class="sres-user" style="cursor:pointer;padding:16px 20px"><span style="color:var(--accent);font-weight:600;font-size:1rem">#'+san(tag)+'</span><span style="color:var(--text2);font-size:.85rem;margin-left:8px">View all posts</span></div>';
+    results.querySelector('.sres-user').addEventListener('click',function(){navTo('hashtag',{tag:tag});});
+    return;
+  }
+  var users=DB.users();var me=users[CU.id];
+  var matches=Object.values(users).filter(function(u){
+    if((me.blocked||[]).indexOf(u.id)>-1||(u.blocked||[]).indexOf(me.id)>-1)return false;
+    return u.username.toLowerCase().indexOf(q)>-1||u.name.toLowerCase().indexOf(q)>-1;
+  });
+  if(!matches.length){results.innerHTML='<div style="padding:30px 20px;color:var(--text3);text-align:center">No citizens found.</div>';return;}
+  matches.forEach(function(u){
+    var row=document.createElement('div');row.className='sres-user';
+    row.appendChild(mkAv(u,''));
+    var mid=document.createElement('div');mid.style.flex='1';
+    mid.innerHTML='<div style="font-weight:600;display:flex;align-items:center;gap:4px">'+san(u.name)+(u.verified?VBADGE:'')+(u.modBadge?MBADGE:'')+'</div><div style="font-size:.85rem;color:var(--text2)">@'+san(u.username)+'</div>'+(u.bio?'<div style="font-size:.82rem;color:var(--text2);margin-top:3px">'+san(u.bio.slice(0,80))+'</div>':'');
+    row.appendChild(mid);
+    if(u.id!==me.id){
+      var isF=me.following.indexOf(u.id)>-1;
+      var btn=document.createElement('button');btn.className='btn btn-s '+(isF?'btn-fg':'btn-f');btn.textContent=isF?'Following':'Follow';
+      btn.addEventListener('click',function(e){e.stopPropagation();toggleFollow(u.id,doSearch);});row.appendChild(btn);
+    }
+    row.addEventListener('click',function(){navTo('profile',{uid:u.id});});results.appendChild(row);
+  });
+};
+
+// ══ NOTIFICATIONS ══
+function updateNotifBadge(){
+  var notifs=DB.notifs(CU.id);
+  var unread=(notifs||[]).filter(function(n){return !n.read;}).length;
+  var badge=document.getElementById('notif-badge');
+  if(!badge)return;
+  if(unread>0){badge.textContent=unread>99?'99+':String(unread);badge.style.display='';}
+  else{badge.style.display='none';}
+}
+function renderNotifs(){
+  var notifs=DB.notifs(CU.id);var users=DB.users();var el=document.getElementById('notifs-list');el.innerHTML='';
+  // Mark all as read
+  var updated=notifs.map(function(n){return Object.assign({},n,{read:true});});
+  DB.s('ch_nf_'+CU.id,updated);
+  updateNotifBadge();
+  if(!notifs.length){el.innerHTML='<div class="empty-feed"><p>Nothing yet</p><p>Likes, follows, retweets and replies appear here.</p></div>';return;}
+  notifs.forEach(function(n){
+    var from=users[n.fromId];if(!from)return;
+    var item=document.createElement('div');item.className='nitem2';
+    var icons={like:'❤️',retweet:'↺',follow:'👤',comment:'💬',post:'📝'};
+    var msgs={like:'<strong>'+san(from.name)+'</strong> liked your post',retweet:'<strong>'+san(from.name)+'</strong> retweeted your post',follow:'<strong>'+san(from.name)+'</strong> followed you',comment:'<strong>'+san(from.name)+'</strong> replied to your post',post:'<strong>'+san(from.name)+'</strong> posted'};
+    item.innerHTML='<div style="font-size:1.1rem;margin-top:2px">'+(icons[n.type]||'🔔')+'</div><div class="nav-av"></div><div style="flex:1">'+(msgs[n.type]||'')+' <div style="font-size:.78rem;color:var(--text3);margin-top:2px">'+timeAgo(n.ts)+'</div></div>';
+    item.querySelector('.nav-av').appendChild(mkAv(from,'sm'));
+    item.addEventListener('click',function(){if(n.type==='follow')navTo('profile',{uid:from.id});else if(n.tweetId)navTo('thread',{tid:n.tweetId});});
+    el.appendChild(item);
+  });
+}
+
+// ══ BAN SYSTEM ══
+var _banTargetId = null;
+
+function showBannedScreen(u){
+  document.getElementById('auth-screen').style.display='none';
+  var app=document.getElementById('app');app.style.display='none';
+  var existing=document.getElementById('banned-screen');if(existing)existing.remove();
+  var screen=document.createElement('div');screen.id='banned-screen';screen.className='banned-screen';
+  screen.innerHTML='<div style="font-size:4rem;margin-bottom:16px">🔨</div>'
+    +'<h1>You have been banned</h1>'
+    +'<p style="margin-bottom:12px">Your account has been suspended from Chirper by a moderator.</p>'
+    +(u.banReason?'<div class="ban-reason-pill">Reason: '+san(u.banReason)+'</div>':'')
+    +'<button class="btn btn-o" style="margin-top:24px" onclick="DB.clearSession();location.reload()">Return to Login</button>';
+  document.body.appendChild(screen);
+}
+
+function openBanModal(targetId){
+  var users=DB.users();var tgt=users[targetId];if(!tgt)return;
+  _banTargetId=targetId;
+  document.getElementById('ban-modal-name').textContent=tgt.name+' (@'+tgt.username+')';
+  document.getElementById('ban-reason-inp').value='';
+  document.getElementById('ban-modal').style.display='flex';
+  setTimeout(function(){document.getElementById('ban-reason-inp').focus();},50);
+}
+
+window.confirmBan=function(){
+  if(!_banTargetId)return;
+  var reason=document.getElementById('ban-reason-inp').value.trim();
+  var users=DB.users();var tgt=users[_banTargetId];if(!tgt)return;
+  tgt.banned=true;tgt.banReason=reason||'';tgt.bannedBy=CU.id;tgt.bannedAt=Date.now();
+  DB.setUsers(users);
+  document.getElementById('ban-modal').style.display='none';
+  _banTargetId=null;
+  toast('🔨 @'+tgt.username+' has been banned.');
+  renderModPanel();
+};
+
+function unbanUser(targetId){
+  var users=DB.users();var tgt=users[targetId];if(!tgt)return;
+  tgt.banned=false;tgt.banReason='';tgt.bannedBy=null;tgt.bannedAt=null;
+  DB.setUsers(users);
+  toast('✅ @'+tgt.username+' has been unbanned.');
+  renderModPanel();
+}
+
+function renderModPanel(){
+  var users=DB.users();var el=document.getElementById('modpanel-list');el.innerHTML='';
+  var sorted=Object.values(users).filter(function(u){return u.username.toLowerCase()!=='potus';}).sort(function(a,b){
+    // Banned users first
+    if(a.banned&&!b.banned)return -1;if(!a.banned&&b.banned)return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  // Section: currently banned
+  var bannedUsers=sorted.filter(function(u){return u.banned;});
+  var activeUsers=sorted.filter(function(u){return !u.banned;});
+
+  if(bannedUsers.length){
+    var bh=document.createElement('div');bh.style.cssText='padding:10px 20px;font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--danger);border-bottom:1px solid var(--border);background:rgba(232,85,85,.05)';bh.textContent='Currently Banned ('+bannedUsers.length+')';el.appendChild(bh);
+    bannedUsers.forEach(function(u){el.appendChild(buildModRow(u,users));});
+  }
+
+  var ah=document.createElement('div');ah.style.cssText='padding:10px 20px;font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)';ah.textContent='All Users ('+activeUsers.length+')';el.appendChild(ah);
+  activeUsers.forEach(function(u){el.appendChild(buildModRow(u,users));});
+}
+
+function buildModRow(u,users){
+  var bannedBy=u.bannedBy?users[u.bannedBy]:null;
+  var row=document.createElement('div');row.className='admin-row';
+  if(u.banned)row.style.background='rgba(232,85,85,.04)';
+  row.appendChild(mkAv(u,'sm'));
+  var info=document.createElement('div');info.style.flex='1';info.style.minWidth='0';
+  var nameHtml='<div style="font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+    +san(u.name)
+    +(u.verified?VBADGE:'')
+    +(u.modBadge?MBADGE:'')
+    +(u.banned?'<span class="ban-badge">🔨 Banned</span>':'')
+    +'</div>'
+    +'<div style="font-size:.82rem;color:var(--text2)">@'+san(u.username)+'</div>';
+  if(u.banned){
+    nameHtml+='<div style="font-size:.78rem;color:var(--text3);margin-top:2px">';
+    if(u.banReason)nameHtml+='Reason: '+san(u.banReason)+' · ';
+    if(bannedBy)nameHtml+='By: '+san(bannedBy.name)+' · ';
+    if(u.bannedAt)nameHtml+=timeAgo(u.bannedAt)+' ago';
+    nameHtml+='</div>';
+  }
+  info.innerHTML=nameHtml;row.appendChild(info);
+  // Don't allow banning self, POTUS, or other mods (unless you're POTUS)
+  var isPotus=CU.username.toLowerCase()==='potus';
+  var canAct=u.id!==CU.id&&(isPotus||(u.role!=='mod'&&!u.modBadge));
+  if(canAct){
+    if(u.banned){
+      var unbanBtn=document.createElement('button');unbanBtn.className='btn btn-s btn-o';unbanBtn.textContent='Unban';
+      unbanBtn.addEventListener('click',function(){unbanUser(u.id);});row.appendChild(unbanBtn);
+    } else {
+      var banBtn=document.createElement('button');banBtn.className='btn btn-s btn-danger';banBtn.textContent='🔨 Ban';
+      banBtn.addEventListener('click',function(){openBanModal(u.id);});row.appendChild(banBtn);
+    }
+  } else if(u.id===CU.id){
+    var self=document.createElement('span');self.style.cssText='font-size:.78rem;color:var(--text3);padding:0 8px';self.textContent='(you)';row.appendChild(self);
+  }
+  return row;
+}
+
+// ══ ADMIN ══
+function renderAdmin(){
+  var users=DB.users();var el=document.getElementById('admin-list');el.innerHTML='';
+  // Mod invite section (POTUS only)
+  var inviteBox=document.createElement('div');inviteBox.className='pbox';inviteBox.style.marginBottom='16px';
+  inviteBox.innerHTML='<h3>Create mod account</h3><p style="font-size:.85rem;color:var(--text2);margin-bottom:10px">Generate a one-time code. Share it with someone; they enter it when signing up to become a moderator (community notes + mod badge).</p>';
+  var genBtn=document.createElement('button');genBtn.className='btn btn-p btn-s';genBtn.style.width='auto';genBtn.textContent='Generate mod invite code';
+  var codeDisplay=document.createElement('div');codeDisplay.style.cssText='margin-top:10px;font-family:monospace;font-size:.9rem;color:var(--accent);word-break:break-all;';
+  genBtn.addEventListener('click',function(){
+    var code=uid_gen()+uid_gen().slice(-4);
+    var invites=DB.g('ch_mod_invites')||[];invites.push(code);DB.s('ch_mod_invites',invites);
+    codeDisplay.textContent='Code: '+code;codeDisplay.style.display='block';
+    toast('Code generated. Share with the new mod.');
+  });
+  inviteBox.appendChild(genBtn);inviteBox.appendChild(codeDisplay);el.appendChild(inviteBox);
+  var h2=document.createElement('h3');h2.style.marginTop='16px';h2.textContent='Verified checkmarks';el.appendChild(h2);
+  Object.values(users).sort(function(a,b){return a.name.localeCompare(b.name);}).forEach(function(u){
+    var row=document.createElement('div');row.className='admin-row';
+    row.appendChild(mkAv(u,'sm'));
+    var info=document.createElement('div');info.style.flex='1';
+    info.innerHTML='<div style="font-weight:600;display:flex;align-items:center;gap:4px">'+san(u.name)+(u.verified?VBADGE:'')+(u.modBadge?MBADGE:'')+(u.banned?'<span class="ban-badge">🔨</span>':'')+'</div><div style="font-size:.82rem;color:var(--text2)">@'+san(u.username)+'</div>';
+    row.appendChild(info);
+    var btn=document.createElement('button');btn.className='btn btn-s '+(u.verified?'btn-fg':'btn-f');btn.textContent=u.verified?'Unverify':'Verify';
+    btn.addEventListener('click',function(){var us=DB.users();us[u.id].verified=!us[u.id].verified;DB.setUsers(us);renderAdmin();toast((us[u.id].verified?'Verified':'Unverified')+' @'+u.username);});
+    row.appendChild(btn);el.appendChild(row);
+  });
+}
+
+// ══ SETTINGS ══
+window.saveSettings=function(){
+  var users=DB.users();var u=users[CU.id];
+  var n=document.getElementById('set-name').value.trim();if(n)u.name=n;
+  u.bio=document.getElementById('set-bio').value.trim();
+  if(pendingPfp.settings)u.avatar=pendingPfp.settings;
+  var np=document.getElementById('set-pw').value;if(np)u.password=np;
+  DB.setUsers(users);CU=u;pendingPfp.settings=null;refreshSidebar();toast('Profile updated!');
+};
+
+// ══ SEED DATA ══
+function seed(){
+  if(DB.g('ch_seeded'))return;
+  var users={};
+  [{id:'demo1',name:'Chancellor Reeves',username:'chancellor_reeves',password:'demo',bio:'Head of the Central Authority.',avatar:'',banner:'',verified:true,following:['demo2','demo3'],followers:['demo2','demo3'],pinnedTweet:null,blocked:[],role:null,modBadge:false},
+   {id:'demo2',name:'Minister Holt',username:'minister_holt',password:'demo',bio:'Ministry of Information.',avatar:'',banner:'',verified:false,following:['demo1'],followers:['demo1','demo3'],pinnedTweet:null,blocked:[],role:null,modBadge:false},
+   {id:'demo3',name:'The Opposition',username:'the_opposition',password:'demo',bio:'We stand against the regime.',avatar:'',banner:'',verified:false,following:['demo1','demo2'],followers:['demo1'],pinnedTweet:null,blocked:[],role:null,modBadge:false},
+   {id:'potus1',name:'POTUS',username:'POTUS',password:'potus',bio:'President. Admin access.',avatar:'',banner:'',verified:true,following:[],followers:[],pinnedTweet:null,blocked:[],role:null,modBadge:false}
+  ].forEach(function(u){users[u.id]=u;});
+  DB.setUsers(users);
+  var n=Date.now();
+  DB.setTweets([
+    {id:'t1',authorId:'demo1',text:'The new decree goes into effect at midnight. #order #republic',image:null,ts:n-3600000,likes:['demo2'],retweets:['demo2'],retweetOf:null,pinned:false,communityNotes:[]},
+    {id:'t2',authorId:'demo2',text:'Proud to serve. #loyaltytothestate',image:null,ts:n-7200000,likes:['demo1'],retweets:[],retweetOf:null,pinned:false,communityNotes:[]},
+    {id:'t3',authorId:'demo3',text:'They cannot silence us. #resistance #freedom',image:null,ts:n-1800000,likes:[],retweets:[],retweetOf:null,pinned:false,communityNotes:[]},
+    {id:'t4',authorId:'demo2',text:'The Chancellor is wise. #order',image:null,ts:n-900000,likes:[],retweets:[],retweetOf:'t1',retweetAuthorId:'demo1',pinned:false,communityNotes:[]}
+  ]);
+  DB.s('ch_seeded',true);
+}
+
+// ══ INIT ══
+async function initApp(){
+  await DB.init();
+  seed();
+  wireInputs();
+  var sess=DB.session();
+  if(sess&&DB.users()[sess])launch(sess);
+  else document.getElementById('auth-screen').style.display='flex';
+}
+initApp();
+</script>
+</body>
+</html>
