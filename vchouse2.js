@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
     // Load district data
-    fetch('vchousemap2KeyComposites.geojson')
+    fetch('delawaretesting.geojson')
         .then(response => response.json())
         .then(data => {
             // Create the GeoJSON layer with custom styling
