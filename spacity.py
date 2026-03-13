@@ -23,7 +23,7 @@ def number_to_ordinal(n):
         suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
     return f"{n}{suffix}"
 
-with open('VCHouseMap2.geojson', 'r') as f:
+with open('delawaretesting.geojson', 'r') as f:
     data = json.load(f)
 
 with open('state_district_count_reference.json', 'r') as f:
@@ -54,5 +54,5 @@ for feature in data['features']:
         del state_districts[current_state]  # Move to the next state
         current_district_counter = 0
 
-with open('vchousemap2KeyComposites.geojson', 'w') as f:
+with open('delawaretesting.geojson', 'w') as f:
     json.dump(data, f)
