@@ -421,7 +421,7 @@ function initializeDistrictMap(state, district) {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    fetch('vchousemap2KeyComposites.geojson')
+    fetch('delawaretesting.geojson')
         .then(response => response.json())
         .then(data => {
             const districtKey = `${state}-${district}`;
