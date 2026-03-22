@@ -3,198 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legislative Tracker - VCHouse.gov</title>
+    <title>Legislative Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-blue: #003366;
-            --secondary-blue: #005DA6;
-            --accent-gold: #B5985A;
-            --text-dark: #333333;
-            --background-light: #F5F5F5;
+            --primary-blue: #102a43;
+            --secondary-blue: #1f5f8b;
+            --accent-gold: #d1a95b;
+            --text-dark: #1f2933;
+            --muted: #52606d;
+            --surface: rgba(255, 255, 255, 0.92);
+            --border: rgba(16, 42, 67, 0.12);
+            --bg: linear-gradient(180deg, #dfe9f2 0%, #eef3f7 48%, #f7f4ec 100%);
         }
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             font-family: 'Source Sans Pro', sans-serif;
         }
 
         body {
-            background-color: var(--background-light);
-        }
-
-        .header {
-            background-color: var(--primary-blue);
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 2rem;
-        }
-
-        .sidebar {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .main-content {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .btn {
-            background-color: var(--secondary-blue);
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn:hover {
-            background-color: var(--primary-blue);
-        }
-
-        .filter-section {
-            margin-bottom: 2rem;
-        }
-
-        .filter-section h3 {
-            margin-bottom: 1rem;
+            background:
+                radial-gradient(circle at top left, rgba(209, 169, 91, 0.16), transparent 28%),
+                var(--bg);
             color: var(--text-dark);
         }
 
-        .filter-group {
-            margin-bottom: 1rem;
+        .header {
+            background: rgba(16, 42, 67, 0.96);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            box-shadow: 0 16px 42px rgba(16, 42, 67, 0.18);
         }
 
-        .filter-group label {
-            display: block;
-            margin-bottom: 0.5rem;
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
-        .search-box {
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 0.75rem 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .btn-primary {
+            background: var(--secondary-blue);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary-blue);
+            border: 1px solid var(--border);
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 1.5rem auto 2rem;
+            padding: 0 1rem;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, rgba(16, 42, 67, 0.96), rgba(31, 95, 139, 0.88));
+            color: white;
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 24px 60px rgba(16, 42, 67, 0.16);
+        }
+
+        .hero p {
+            margin-top: 0.5rem;
+            color: rgba(255, 255, 255, 0.82);
+            max-width: 64ch;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.25rem;
+        }
+
+        .sidebar,
+        .content-panel,
+        .admin-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            box-shadow: 0 18px 40px rgba(16, 42, 67, 0.08);
+        }
+
+        .sidebar,
+        .content-panel,
+        .admin-panel {
+            padding: 1.25rem;
+        }
+
+        .sidebar-section + .sidebar-section {
+            margin-top: 1.25rem;
+        }
+
+        .sidebar h3,
+        .admin-panel h3 {
+            color: var(--primary-blue);
+            margin-bottom: 0.65rem;
+        }
+
+        .search-box,
+        .filter-select,
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
             width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            padding: 0.75rem 0.85rem;
+        }
+
+        .search-box,
+        .filter-select {
+            margin-top: 0.45rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 0.8rem;
             margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: #f8fafc;
+            border: 1px solid rgba(16, 42, 67, 0.08);
+            border-radius: 18px;
+            padding: 1rem;
+        }
+
+        .stat-card strong {
+            display: block;
+            font-size: 1.4rem;
+            color: var(--primary-blue);
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
         }
 
         .bill-list {
-            list-style: none;
+            display: grid;
+            gap: 1rem;
         }
 
-        .bill-item {
+        .bill-card {
+            background: #f8fafc;
+            border: 1px solid rgba(16, 42, 67, 0.08);
+            border-radius: 20px;
             padding: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-bottom: 1rem;
         }
 
         .bill-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.5rem;
+            gap: 1rem;
+            align-items: start;
         }
 
         .bill-title {
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.15rem;
+            font-weight: 700;
             color: var(--primary-blue);
         }
 
-        .bill-status {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.875rem;
-            font-weight: 600;
+        .pill {
+            background: rgba(31, 95, 139, 0.12);
+            color: var(--primary-blue);
+            border-radius: 999px;
+            padding: 0.3rem 0.7rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            white-space: nowrap;
         }
 
-        .status-introduced { background-color: #e9ecef; }
-        .status-committee { background-color: #fff3cd; }
-        .status-passed-house { background-color: #d4edda; }
-        .status-failed { background-color: #f8d7da; }
-
-        .bill-meta {
-            font-size: 0.875rem;
-            color: #666;
-            margin-bottom: 0.5rem;
-        }
-
-        .bill-description {
-            margin-bottom: 0.5rem;
-        }
-
+        .bill-meta,
+        .bill-summary,
+        .bill-files,
         .bill-actions {
+            margin-top: 0.65rem;
+        }
+
+        .file-links {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.6rem;
+            flex-wrap: wrap;
         }
 
-        .committee-schedule {
-            margin-top: 2rem;
-        }
-
-        .schedule-item {
-            padding: 1rem;
-            border-left: 4px solid var(--accent-gold);
-            background: #f8f9fa;
-            margin-bottom: 1rem;
-        }
-
-        .schedule-time {
-            font-weight: 600;
+        .file-link {
+            text-decoration: none;
+            padding: 0.45rem 0.75rem;
+            border-radius: 999px;
+            background: white;
+            border: 1px solid var(--border);
             color: var(--primary-blue);
-        }
-
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .tab {
-            padding: 0.5rem 1rem;
-            background: #eee;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .tab.active {
-            background: var(--secondary-blue);
-            color: white;
+            font-weight: 600;
         }
 
         .pagination {
             display: flex;
             justify-content: center;
             gap: 0.5rem;
-            margin-top: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1.25rem;
         }
 
         .page-btn {
-            padding: 0.5rem 1rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: white;
+            color: var(--primary-blue);
+            padding: 0.55rem 0.9rem;
+            font-weight: 700;
             cursor: pointer;
         }
 
@@ -204,192 +260,598 @@
             border-color: var(--secondary-blue);
         }
 
-        .coming-soon-container {
-            position: relative;
-            min-height: 80vh;
-            background: rgba(255, 255, 255, 0.7);
+        .admin-area {
+            display: none;
+            margin-top: 1.25rem;
         }
 
-        .coming-soon-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.35rem;
+            font-weight: 600;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            gap: 0.55rem;
+            margin-top: 0.55rem;
+        }
+
+        .checkbox-grid label {
             display: flex;
-            justify-content: center;
             align-items: center;
-            background: rgba(255, 255, 255, 0.9);
-            z-index: 100;
+            gap: 0.55rem;
+            color: var(--muted);
         }
 
-        .coming-soon-text {
-            font-size: 5rem;
-            font-weight: bold;
-            color: var(--primary-blue);
-            transform: rotate(-30deg);
-            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
-            background: rgba(0, 51, 102, 0.9);
-            color: white;
-            padding: 2rem 4rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        .queue-list {
+            display: grid;
+            gap: 0.75rem;
+            margin-top: 1rem;
         }
 
-        .blurred-content {
-            filter: blur(4px);
-            opacity: 0.5;
-            pointer-events: none;
+        .queue-item {
+            border-radius: 16px;
+            border: 1px solid rgba(16, 42, 67, 0.08);
+            background: #f8fafc;
+            padding: 0.9rem;
+        }
+
+        .empty-state {
+            padding: 2rem;
+            text-align: center;
+            border: 1px dashed var(--border);
+            border-radius: 18px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 980px) {
+            .layout,
+            .form-grid,
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <header class="header">
         <h1>Legislative Tracker</h1>
-        <nav>
-            <a href="index.html" class="btn">Back to Home</a>
-        </nav>
+        <div class="header-actions">
+            <span id="authState" class="muted">Loading archive index...</span>
+            <a href="index.html" class="btn btn-secondary">Back to Home</a>
+        </div>
     </header>
 
-    <div class="container coming-soon-container">
-        <div class="coming-soon-overlay">
-            <div class="coming-soon-text">COMING SOON</div>
+        <div class="layout">
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Search</h3>
+                    <input id="searchBox" class="search-box" type="text" placeholder="Search title, bill number, sponsor, category">
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Status</h3>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="">All statuses</option>
+                    </select>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Source</h3>
+                    <select id="sourceFilter" class="filter-select">
+                        <option value="">All sources</option>
+                        <option value="archive">Archive</option>
+                        <option value="manual">Manual imports</option>
+                    </select>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Category</h3>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">All categories</option>
+                    </select>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Passage Stage</h3>
+                    <select id="passageFilter" class="filter-select">
+                        <option value="">All stages</option>
+                    </select>
+                </div>
+            </aside>
+
+            <main>
+                <section class="content-panel">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <strong id="totalBills">0</strong>
+                            <span class="muted">Total indexed bills</span>
+                        </div>
+                        <div class="stat-card">
+                            <strong id="archiveBills">0</strong>
+                            <span class="muted">Unique archive bills</span>
+                        </div>
+                        <div class="stat-card">
+                            <strong id="manualBills">0</strong>
+                            <span class="muted">Manual Google Doc imports</span>
+                        </div>
+                        <div class="stat-card">
+                            <strong id="variantCount">0</strong>
+                            <span class="muted">Indexed file variants</span>
+                        </div>
+                        <div class="stat-card">
+                            <strong id="archiveFileCount">0</strong>
+                            <span class="muted">Archive source files</span>
+                        </div>
+                    </div>
+
+                    <div class="toolbar">
+                        <div class="muted" id="resultSummary">Loading bills...</div>
+                        <button class="btn btn-secondary" id="rebuildButton" style="display:none;">Rebuild Archive Index</button>
+                    </div>
+
+                    <div id="billList" class="bill-list"></div>
+                    <div id="pagination" class="pagination"></div>
+                </section>
+
+                <section class="admin-panel admin-area" id="adminArea">
+                    <h3 id="contributionTitle">Submit New Legislation</h3>
+                    <p class="muted" id="contributionDescription">Paste a Google Doc link, set the metadata, and choose which export artifacts should be queued automatically.</p>
+
+                    <form id="importForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="title">Bill Title</label>
+                                <input id="title" type="text" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="billNumber">Bill Number</label>
+                                <input id="billNumber" type="text" placeholder="H.R. 451">
+                            </div>
+                            <div class="form-group">
+                                <label for="sponsor">Sponsor</label>
+                                <input id="sponsor" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="sponsorDistrict">Sponsor District</label>
+                                <input id="sponsorDistrict" type="text" placeholder="ME-3">
+                            </div>
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <select id="status">
+                                    <option value="Introduced">Introduced</option>
+                                    <option value="In Committee">In Committee</option>
+                                    <option value="Passed House">Passed House</option>
+                                    <option value="Failed">Failed</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="committee">Committee</label>
+                                <input id="committee" type="text">
+                            </div>
+                            <div class="form-group full">
+                                <label for="googleDocUrl">Google Doc Link</label>
+                                <input id="googleDocUrl" type="url" required placeholder="https://docs.google.com/document/d/...">
+                            </div>
+                            <div class="form-group full">
+                                <label for="summary">Summary</label>
+                                <textarea id="summary" rows="4"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="nextActionType">Next Action Type</label>
+                                <select id="nextActionType">
+                                    <option value="">None</option>
+                                    <option value="committee">Committee</option>
+                                    <option value="floor">Floor</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="nextActionLabel">Next Action Label</label>
+                                <input id="nextActionLabel" type="text" placeholder="Committee hearing">
+                            </div>
+                            <div class="form-group">
+                                <label for="nextActionDate">Next Action Date</label>
+                                <input id="nextActionDate" type="datetime-local">
+                            </div>
+                            <div class="form-group">
+                                <label for="nextActionLocation">Next Action Location</label>
+                                <input id="nextActionLocation" type="text">
+                            </div>
+                            <div class="form-group full">
+                                <label>Import Options</label>
+                                <div class="checkbox-grid">
+                                    <label><input id="publishToIndex" type="checkbox" checked> Publish this bill to the live index</label>
+                                    <label><input id="queuePdfExport" type="checkbox" checked> Queue PDF export from the Google Doc link</label>
+                                    <label><input id="queueTxtExport" type="checkbox" checked> Queue TXT export from the Google Doc link</label>
+                                    <label><input id="queueJsonExport" type="checkbox" checked> Queue JSON manifest export</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add To Index</button>
+                    </form>
+
+                    <div class="queue-list" id="queueList"></div>
+                    <div class="queue-list" id="contributionQueue"></div>
+                </section>
+            </main>
         </div>
-        <aside class="sidebar blurred-content">
-            <div class="filter-section">
-                <h3>Search</h3>
-                <input type="text" class="search-box" placeholder="Search bills...">
-            </div>
-
-            <div class="filter-section">
-                <h3>Filter by Status</h3>
-                <div class="filter-group">
-                    <label><input type="checkbox" checked> Introduced</label>
-                    <label><input type="checkbox" checked> In Committee</label>
-                    <label><input type="checkbox" checked> Passed House</label>
-                    <label><input type="checkbox" checked> Failed</label>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <h3>Filter by Committee</h3>
-                <div class="filter-group">
-                    <label><input type="checkbox" checked> Ways and Means</label>
-                    <label><input type="checkbox" checked> Judiciary</label>
-                    <label><input type="checkbox" checked> Armed Services</label>
-                    <label><input type="checkbox" checked> Foreign Affairs</label>
-                </div>
-            </div>
-        </aside>
-
-        <main class="main-content blurred-content">
-            <div class="tabs">
-                <button class="tab active" onclick="showTab('bills')">Bills</button>
-                <button class="tab" onclick="showTab('committees')">Committee Schedule</button>
-                <button class="tab" onclick="showTab('floor')">Floor Schedule</button>
-            </div>
-
-            <div id="bills" class="tab-content">
-                <ul class="bill-list">
-                    <li class="bill-item">
-                        <div class="bill-header">
-                            <span class="bill-title">H.R. 1234 - Virtual Infrastructure Act</span>
-                            <span class="bill-status status-committee">In Committee</span>
-                        </div>
-                        <div class="bill-meta">
-                            Introduced by Rep. John Smith (D-CA-1) • Ways and Means Committee
-                        </div>
-                        <div class="bill-description">
-                            A bill to modernize and improve virtual infrastructure across the nation.
-                        </div>
-                        <div class="bill-actions">
-                            <a href="#" class="btn">View Details</a>
-                            <a href="#" class="btn">Track Bill</a>
-                        </div>
-                    </li>
-                    <!-- More bill items -->
-                </ul>
-
-                <div class="pagination">
-                    <button class="page-btn">1</button>
-                    <button class="page-btn active">2</button>
-                    <button class="page-btn">3</button>
-                    <button class="page-btn">Next</button>
-                </div>
-            </div>
-
-            <div id="committees" class="tab-content" style="display: none;">
-                <div class="committee-schedule">
-                    <div class="schedule-item">
-                        <div class="schedule-time">10:00 AM - Ways and Means Committee</div>
-                        <p>Hearing on Virtual Infrastructure Act (H.R. 1234)</p>
-                        <p>Location: Virtual Committee Room 1</p>
-                    </div>
-                    <!-- More schedule items -->
-                </div>
-            </div>
-
-            <div id="floor" class="tab-content" style="display: none;">
-                <div class="committee-schedule">
-                    <div class="schedule-item">
-                        <div class="schedule-time">2:00 PM - House Floor Session</div>
-                        <p>Voting on Virtual Education Enhancement Act (H.R. 1235)</p>
-                    </div>
-                    <!-- More floor schedule items -->
-                </div>
-            </div>
-        </main>
     </div>
 
+    <script src="app-config.js"></script>
     <script>
-        function showTab(tabId) {
-            // Hide all tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.style.display = 'none';
+        let currentUser = null;
+        let legislationIndex = { bills: [], stats: {} };
+        let currentPage = 1;
+        const pageSize = 25;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupFilters();
+            await Promise.all([loadAuthState(), loadIndex()]);
+            document.getElementById('importForm').addEventListener('submit', submitImportForm);
+            document.getElementById('rebuildButton').addEventListener('click', rebuildIndex);
+        });
+
+        function setupFilters() {
+            ['searchBox', 'statusFilter', 'sourceFilter', 'categoryFilter', 'passageFilter'].forEach(id => {
+                const element = document.getElementById(id);
+                element.addEventListener('input', () => {
+                    currentPage = 1;
+                    renderBills();
+                });
+                element.addEventListener('change', () => {
+                    currentPage = 1;
+                    renderBills();
+                });
             });
-            
-            // Show selected tab content
-            document.getElementById(tabId).style.display = 'block';
-            
-            // Update active tab
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
         }
 
-        // Search functionality
-        const searchBox = document.querySelector('.search-box');
-        searchBox.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const bills = document.querySelectorAll('.bill-item');
-            
-            bills.forEach(bill => {
-                const title = bill.querySelector('.bill-title').textContent.toLowerCase();
-                const description = bill.querySelector('.bill-description').textContent.toLowerCase();
-                
-                if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                    bill.style.display = 'block';
-                } else {
-                    bill.style.display = 'none';
+        async function loadAuthState() {
+            try {
+                const response = await fetch(window.APP_CONFIG.apiUrl('/api/auth-status'), { credentials: 'include' });
+                const data = await response.json();
+                currentUser = data.user || null;
+                document.getElementById('authState').textContent = currentUser?.isAdmin
+                    ? `Admin mode active for ${currentUser.fullName}`
+                    : 'Public legislation index';
+
+                if (currentUser) {
+                    document.getElementById('adminArea').style.display = 'block';
                 }
-            });
-        });
 
-        // Filter functionality
-        document.querySelectorAll('.filter-group input').forEach(checkbox => {
-            checkbox.addEventListener('change', updateFilters);
-        });
+                if (currentUser?.isAdmin) {
+                    document.getElementById('rebuildButton').style.display = 'inline-flex';
+                    await loadQueue();
+                    await loadContributionQueue();
+                    document.getElementById('contributionTitle').textContent = 'Admin Legislation Intake';
+                    document.getElementById('contributionDescription').textContent = 'As an admin, submissions from this form are published directly into the index and added to the export queue if requested.';
+                } else if (currentUser) {
+                    document.getElementById('contributionTitle').textContent = 'Contribute New Legislation';
+                    document.getElementById('contributionDescription').textContent = 'Your submission will go into a moderation queue for admins to review before it is published.';
+                    document.getElementById('queueList').innerHTML = '<div class="empty-state">Export queue is only visible to admins.</div>';
+                }
+            } catch (error) {
+                document.getElementById('authState').textContent = 'Legislation archive';
+            }
+        }
 
-        function updateFilters() {
-            const bills = document.querySelectorAll('.bill-item');
-            const selectedStatuses = Array.from(document.querySelectorAll('.filter-group:first-of-type input:checked'))
-                .map(cb => cb.parentElement.textContent.trim().toLowerCase());
-            
-            bills.forEach(bill => {
-                const status = bill.querySelector('.bill-status').textContent.toLowerCase();
-                bill.style.display = selectedStatuses.some(s => status.includes(s)) ? 'block' : 'none';
+        async function loadIndex() {
+            const response = await fetch(window.APP_CONFIG.apiUrl('/api/legislation'), { credentials: 'include' });
+            legislationIndex = await response.json();
+            populateFilters();
+            updateStats();
+            renderBills();
+        }
+
+        function populateFilters() {
+            const statuses = [...new Set(legislationIndex.bills.map(bill => bill.status).filter(Boolean))].sort();
+            const categories = [...new Set(legislationIndex.bills.map(bill => bill.category).filter(Boolean))].sort();
+            const passageStages = [...new Set(legislationIndex.bills.map(bill => bill.passageStage).filter(Boolean))].sort();
+
+            document.getElementById('statusFilter').innerHTML =
+                '<option value="">All statuses</option>' +
+                statuses.map(status => `<option value="${status}">${status}</option>`).join('');
+
+            document.getElementById('categoryFilter').innerHTML =
+                '<option value="">All categories</option>' +
+                categories.map(category => `<option value="${category}">${category}</option>`).join('');
+
+            document.getElementById('passageFilter').innerHTML =
+                '<option value="">All stages</option>' +
+                passageStages.map(stage => `<option value="${stage}">${stage}</option>`).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('totalBills').textContent = legislationIndex.stats.totalBills || legislationIndex.bills.length;
+            document.getElementById('archiveBills').textContent = legislationIndex.stats.archiveBills || 0;
+            document.getElementById('manualBills').textContent = legislationIndex.stats.manualImports || 0;
+            document.getElementById('variantCount').textContent = legislationIndex.stats.archiveVariants || 0;
+            document.getElementById('archiveFileCount').textContent =
+                (legislationIndex.stats.archiveJsonFiles || 0) +
+                (legislationIndex.stats.archiveTxtFiles || 0) +
+                (legislationIndex.stats.archivePdfFiles || 0);
+        }
+
+        function getFilteredBills() {
+            const search = document.getElementById('searchBox').value.trim().toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const source = document.getElementById('sourceFilter').value;
+            const category = document.getElementById('categoryFilter').value;
+            const passage = document.getElementById('passageFilter').value;
+
+            return legislationIndex.bills.filter(bill => {
+                const matchesSearch = !search || [
+                    bill.title,
+                    bill.billNumber,
+                    bill.sponsor,
+                    bill.summary,
+                    bill.category
+                ].join(' ').toLowerCase().includes(search);
+
+                const matchesStatus = !status || bill.status === status;
+                const matchesSource = !source || bill.sourceType === source;
+                const matchesCategory = !category || bill.category === category;
+                const matchesPassage = !passage || bill.passageStage === passage;
+                return matchesSearch && matchesStatus && matchesSource && matchesCategory && matchesPassage;
             });
+        }
+
+        function renderBills() {
+            const bills = getFilteredBills();
+            const pageCount = Math.max(1, Math.ceil(bills.length / pageSize));
+            if (currentPage > pageCount) {
+                currentPage = pageCount;
+            }
+            const start = (currentPage - 1) * pageSize;
+            const pageBills = bills.slice(start, start + pageSize);
+            document.getElementById('resultSummary').textContent = `${bills.length} bill${bills.length === 1 ? '' : 's'} shown • page ${currentPage} of ${pageCount}`;
+
+            const billList = document.getElementById('billList');
+            if (!bills.length) {
+                billList.innerHTML = '<div class="empty-state">No bills match the current filters.</div>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            billList.innerHTML = pageBills.map(renderBillCard).join('');
+            renderPagination(pageCount);
+        }
+
+        function renderPagination(pageCount) {
+            const pagination = document.getElementById('pagination');
+            if (pageCount <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            const buttons = [];
+            for (let page = 1; page <= pageCount; page += 1) {
+                if (
+                    page === 1 ||
+                    page === pageCount ||
+                    Math.abs(page - currentPage) <= 1
+                ) {
+                    buttons.push(`<button class="page-btn ${page === currentPage ? 'active' : ''}" data-page="${page}">${page}</button>`);
+                } else if (
+                    buttons[buttons.length - 1] !== '<span class="muted">...</span>'
+                ) {
+                    buttons.push('<span class="muted">...</span>');
+                }
+            }
+
+            pagination.innerHTML = buttons.join('');
+            pagination.querySelectorAll('[data-page]').forEach(button => {
+                button.addEventListener('click', () => {
+                    currentPage = Number(button.dataset.page);
+                    renderBills();
+                });
+            });
+        }
+
+        function renderBillCard(bill) {
+            const fileLinks = [];
+            for (const [kind, links] of Object.entries(bill.fileLinks || {})) {
+                for (const link of links) {
+                    fileLinks.push(`<a class="file-link" href="${link}" target="_blank" rel="noopener">${kind.toUpperCase()}</a>`);
+                }
+            }
+
+            const stageTag = bill.passageStage
+                ? `<span class="pill">${bill.passageStage}</span>`
+                : '';
+
+            return `
+                <article class="bill-card">
+                    <div class="bill-header">
+                        <div>
+                            <div class="bill-title">${bill.billNumber ? `${bill.billNumber} - ` : ''}${bill.title}</div>
+                            <div class="bill-meta muted">
+                                ${bill.sponsor ? `Sponsor: ${bill.sponsor}` : 'Sponsor unknown'}
+                                ${bill.committee ? ` • ${bill.committee}` : ''}
+                                ${bill.category ? ` • ${bill.category}` : ''}
+                                ${bill.year ? ` • ${bill.year}` : ''}
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
+                            <span class="pill">${bill.status || 'Indexed'}</span>
+                            ${stageTag}
+                        </div>
+                    </div>
+                    <div class="bill-summary">${bill.summary || 'No summary available yet.'}</div>
+                    <div class="bill-meta muted">
+                        Source: ${bill.sourceType}
+                        ${bill.passageStage ? ` • Passage stage: ${bill.passageStage}` : ''}
+                        ${bill.variants ? ` • Variants: ${bill.variants}` : ''}
+                        ${bill.googleDocUrl ? ` • <a href="${bill.googleDocUrl}" target="_blank" rel="noopener">Google Doc</a>` : ''}
+                    </div>
+                    <div class="bill-files">
+                        ${fileLinks.length ? `<div class="file-links">${fileLinks.join('')}</div>` : '<span class="muted">No local export files attached yet.</span>'}
+                    </div>
+                </article>
+            `;
+        }
+
+        async function rebuildIndex() {
+            const response = await fetch(window.APP_CONFIG.apiUrl('/api/admin/legislation/rebuild'), {
+                method: 'POST',
+                credentials: 'include'
+            });
+            legislationIndex = await response.json();
+            populateFilters();
+            updateStats();
+            renderBills();
+            await loadQueue();
+        }
+
+        async function submitImportForm(event) {
+            event.preventDefault();
+            const localDate = document.getElementById('nextActionDate').value;
+            const payload = {
+                title: document.getElementById('title').value,
+                billNumber: document.getElementById('billNumber').value,
+                sponsor: document.getElementById('sponsor').value,
+                sponsorDistrict: document.getElementById('sponsorDistrict').value,
+                status: document.getElementById('status').value,
+                committee: document.getElementById('committee').value,
+                summary: document.getElementById('summary').value,
+                googleDocUrl: document.getElementById('googleDocUrl').value,
+                nextActionType: document.getElementById('nextActionType').value,
+                nextActionLabel: document.getElementById('nextActionLabel').value,
+                nextActionDate: localDate ? new Date(localDate).toISOString() : '',
+                nextActionLocation: document.getElementById('nextActionLocation').value,
+                publishToIndex: document.getElementById('publishToIndex').checked,
+                queuePdfExport: document.getElementById('queuePdfExport').checked,
+                queueTxtExport: document.getElementById('queueTxtExport').checked,
+                queueJsonExport: document.getElementById('queueJsonExport').checked
+            };
+
+            const endpoint = currentUser?.isAdmin
+                ? '/api/admin/legislation/import-link'
+                : '/api/legislation/submit';
+            const response = await fetch(window.APP_CONFIG.apiUrl(endpoint), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.message || 'Unable to import legislation');
+                return;
+            }
+
+            if (currentUser?.isAdmin) {
+                legislationIndex = data;
+                populateFilters();
+                updateStats();
+                renderBills();
+                await loadQueue();
+                await loadContributionQueue();
+            } else {
+                alert('Thanks. Your legislation submission is now in the review queue.');
+                await loadContributionQueue();
+            }
+            event.target.reset();
+        }
+
+        async function loadQueue() {
+            const response = await fetch(window.APP_CONFIG.apiUrl('/api/admin/legislation/import-queue'), {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            const queue = data.queue || [];
+            const queueList = document.getElementById('queueList');
+
+            if (!queue.length) {
+                queueList.innerHTML = '<div class="empty-state">No queued Google Doc exports yet.</div>';
+                return;
+            }
+
+            queueList.innerHTML = queue.map(item => `
+                <div class="queue-item">
+                    <strong>${item.billNumber || item.title || item.id}</strong>
+                    <div class="muted">Status: ${item.status}</div>
+                    <div class="muted">PDF: ${item.queuePdfExport ? 'yes' : 'no'} • TXT: ${item.queueTxtExport ? 'yes' : 'no'} • JSON: ${item.queueJsonExport ? 'yes' : 'no'}</div>
+                </div>
+            `).join('');
+        }
+
+        async function loadContributionQueue() {
+            const container = document.getElementById('contributionQueue');
+            if (!currentUser?.isAdmin) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const response = await fetch(window.APP_CONFIG.apiUrl('/api/admin/legislation/contributions'), {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            const contributions = data.contributions || [];
+
+            const pending = contributions.filter(entry => entry.reviewStatus === 'pending');
+            if (!pending.length) {
+                container.innerHTML = '<div class="empty-state">No pending legislation contributions.</div>';
+                return;
+            }
+
+            container.innerHTML = pending.map(entry => `
+                <div class="queue-item">
+                    <strong>${entry.billNumber || entry.title}</strong>
+                    <div class="muted">Submitted by ${entry.submittedBy?.fullName || 'Unknown'} (${entry.submittedBy?.email || 'unknown'})</div>
+                    <div class="muted">Status: ${entry.status || 'Introduced'}${entry.committee ? ` • ${entry.committee}` : ''}</div>
+                    <div class="muted">${entry.googleDocUrl}</div>
+                    <div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.75rem;">
+                        <button class="btn btn-primary" onclick="approveContribution('${entry.id}')">Approve</button>
+                        <button class="btn btn-secondary" onclick="rejectContribution('${entry.id}')">Reject</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function approveContribution(id) {
+            const response = await fetch(window.APP_CONFIG.apiUrl('/api/admin/legislation/contributions/approve'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ id })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                legislationIndex = data;
+                populateFilters();
+                updateStats();
+                renderBills();
+                await loadQueue();
+                await loadContributionQueue();
+            }
+        }
+
+        async function rejectContribution(id) {
+            const response = await fetch(window.APP_CONFIG.apiUrl('/api/admin/legislation/contributions/reject'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ id })
+            });
+            if (response.ok) {
+                await loadContributionQueue();
+            }
         }
     </script>
 </body>

@@ -227,6 +227,114 @@
                 position: static;
             }
         }
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(209, 169, 91, 0.14), transparent 28%),
+                linear-gradient(180deg, #dfe9f2 0%, #eef3f7 44%, #f7f4ec 100%);
+        }
+
+        .header {
+            background: rgba(16, 42, 67, 0.96);
+            box-shadow: 0 16px 42px rgba(16, 42, 67, 0.18);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 1.5rem auto 2rem;
+            gap: 1.25rem;
+        }
+
+        .profile-sidebar,
+        .profile-content,
+        .admin-controls {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(16, 42, 67, 0.12);
+            border-radius: 22px;
+            box-shadow: 0 18px 40px rgba(16, 42, 67, 0.08);
+        }
+
+        .profile-sidebar,
+        .profile-content {
+            padding: 1.25rem;
+        }
+
+        .profile-picture-container {
+            border-radius: 26px;
+            overflow: hidden;
+            border: 1px solid rgba(16, 42, 67, 0.1);
+            box-shadow: 0 16px 36px rgba(16, 42, 67, 0.12);
+        }
+
+        .profile-picture {
+            background: #f8fafc;
+        }
+
+        .upload-overlay {
+            backdrop-filter: blur(6px);
+            letter-spacing: 0.02em;
+        }
+
+        .claimed-district {
+            margin-top: 1rem;
+            background: #f8fafc;
+            border: 1px solid rgba(16, 42, 67, 0.08);
+            border-radius: 18px;
+            padding: 1rem;
+        }
+
+        .claimed-district h3 {
+            color: #102a43;
+            margin-bottom: 0.4rem;
+        }
+
+        #profileForm {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .form-group label {
+            color: #102a43;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            border-radius: 14px;
+            border: 1px solid rgba(16, 42, 67, 0.12);
+            background: #f8fafc;
+        }
+
+        .form-group textarea {
+            min-height: 180px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            border-radius: 999px;
+            padding: 0.75rem 1.1rem;
+        }
+
+        .admin-controls {
+            margin-top: 1.25rem;
+            padding: 1.25rem;
+        }
+
+        .admin-controls h2 {
+            color: #102a43;
+            margin-bottom: 0.85rem;
+        }
+
+        .admin-btn + .admin-btn {
+            margin-left: 0.5rem;
+        }
+
+        @media (max-width: 920px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -289,9 +397,27 @@
                 <button class="btn admin-btn" onclick="manageUsers()">Manage Users</button>
                 <button class="btn admin-btn" onclick="viewReports()">View Reports</button>
             </div>
+
+            <div id="adminKeyIssuer" class="admin-controls" style="display: none;">
+                <h2>Admin Key Generator</h2>
+                <p>Generate one-time admin promotion keys for trusted users.</p>
+                <button class="btn admin-btn" id="generateAdminKeyBtn">Generate Admin Key</button>
+                <div id="generatedAdminKey" class="message" style="display:none;"></div>
+            </div>
+
+            <div id="adminKeyRedeemer" class="admin-controls">
+                <h2>Redeem Admin Key</h2>
+                <p>Have a promotion key from Sydney? Redeem it here to become a site admin.</p>
+                <div class="form-group">
+                    <label for="adminKeyInput">Admin Key</label>
+                    <input type="text" id="adminKeyInput" placeholder="ABCD-EFGH-JKLM-NPQR">
+                </div>
+                <button class="btn admin-btn" id="redeemAdminKeyBtn">Redeem Key</button>
+            </div>
         </main>
     </div>
 
+    <script src="app-config.js"></script>
     <script src="profile.js"></script>
 </body>
 </html>

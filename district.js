@@ -1,6 +1,24 @@
 // Global variables
 let currentUser = null;
-const API_BASE = 'https://vchouse-production.up.railway.app';
+let claimedDistrictKey = null;
+let activeDistrictKey = null;
+const API_BASE = window.APP_CONFIG.apiBase;
+
+function userOwnsActiveDistrict() {
+    return Boolean(currentUser && claimedDistrictKey && activeDistrictKey && claimedDistrictKey === activeDistrictKey);
+}
+
+function updateDistrictOwnershipUI() {
+    const editButton = document.querySelector('.edit-biography-btn');
+    if (editButton) {
+        editButton.style.display = userOwnsActiveDistrict() ? 'inline-flex' : 'none';
+    }
+
+    const unclaimButton = document.querySelector('.unclaim-district-btn');
+    if (unclaimButton) {
+        unclaimButton.style.display = userOwnsActiveDistrict() ? 'inline-flex' : 'none';
+    }
+}
 
 // Modal functions
 function openModal(modalId) {
@@ -44,10 +62,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 isAdmin: data.user.isAdmin
             };
             console.log('Current user set to:', currentUser);
+            try {
+                const claimedResponse = await fetch(`${API_BASE}/api/claimed-district`, {
+                    credentials: 'include'
+                });
+                const claimedData = await claimedResponse.json();
+                claimedDistrictKey = claimedData.district || null;
+            } catch (claimedError) {
+                console.error('Error checking claimed district:', claimedError);
+                claimedDistrictKey = null;
+            }
             updateUIForUser();
         } else {
             console.log('No user logged in');
             currentUser = null;
+            claimedDistrictKey = null;
             updateUIForUser();
         }
     } catch (error) {
@@ -154,9 +183,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const district = urlParams.get('district');
 
     if (state && district) {
+        activeDistrictKey = `${state}-${district}`;
         await loadDistrictData(state, district);
         updatePageTitle(state, district);
         initializeDistrictMap(state, district);
+        updateDistrictOwnershipUI();
     }
 });
 
@@ -235,16 +266,16 @@ function updateRepresentativeInfo(districtData, districtKey, state, district) {
         const biographySection = document.createElement('div');
         biographySection.className = 'biography';
         biographySection.innerHTML = `
-            <h2>Biography</h2>
+            <div class="biography-header">
+                <h2>Biography</h2>
+                ${userOwnsActiveDistrict() ? 
+                    '<button class="edit-biography-btn" onclick="openBiographyEditor()">Edit Biography</button>' : 
+                    ''}
+            </div>
             <div class="biography-container">
                 <div class="biography-content" id="biographyContent">
                     <div id="biographyText"></div>
                     <div class="fade-bottom" id="fadeBottom"></div>
-                </div>
-                <div class="biography-buttons">
-                    ${currentUser && currentUser.fullName === districtData.Name ? 
-                        '<button class="edit-biography-btn" onclick="openBiographyEditor()">Edit Biography</button>' : 
-                        ''}
                 </div>
             </div>
         `;
@@ -258,10 +289,7 @@ function updateRepresentativeInfo(districtData, districtKey, state, district) {
         }
 
         // Fetch and display biography
-        fetch(`${API_BASE}/api/get-biography`, {
-            credentials: 'include',
-            headers: { 'Accept': 'application/json' }
-        })
+        fetch(`${API_BASE}/api/biography/${districtKey}`)
         .then(response => response.json())
         .then(data => {
             const biographyText = document.getElementById('biographyText');
@@ -275,6 +303,10 @@ function updateRepresentativeInfo(districtData, districtKey, state, district) {
         .catch(error => {
             console.error('Error loading biography:', error);
             document.getElementById('biographyText').innerHTML = '<p>No biography available.</p>';
+        })
+        .finally(() => {
+            updateShowMoreButton();
+            updateDistrictOwnershipUI();
         });
     } else {
         nameElement.textContent = 'No Representative Assigned';
@@ -298,6 +330,10 @@ function updateRepresentativeInfo(districtData, districtKey, state, district) {
 
 // Biography editor functions
 function openBiographyEditor() {
+    if (!userOwnsActiveDistrict()) {
+        return;
+    }
+
     const editor = document.getElementById('biographyEditor');
     // Get current biography
     fetch(`${API_BASE}/api/get-biography`, {
@@ -660,6 +696,8 @@ function updateUIForUser() {
             registerBtn.addEventListener('click', () => openModal('registerModal'));
         }
     }
+
+    updateDistrictOwnershipUI();
 }
 
 // Add logout function
@@ -844,6 +882,7 @@ async function loadDistrictData(state, district) {
         const data = await response.json();
         
         const districtKey = `${state}-${district}`;
+        activeDistrictKey = districtKey;
         const representativeInfo = data[districtKey];
         
         if (representativeInfo && representativeInfo !== "N/A") {
@@ -854,16 +893,19 @@ async function loadDistrictData(state, district) {
             updateRepresentativeInfo({ Name: name, Party: partyClean }, districtKey, state, district);
             
             // Fetch biography without auth requirement
-            fetch(`/api/biography/${districtKey}`)
+            fetch(`${API_BASE}/api/biography/${districtKey}`)
                 .then(response => response.json())
                 .then(data => {
                     const biographyText = document.getElementById('biographyText');
                     biographyText.innerHTML = data.biography || 'No biography available.';
-                    updateShowMoreButton();
                 })
                 .catch(error => {
                     console.error('Error loading biography:', error);
                     document.getElementById('biographyText').innerHTML = 'No biography available.';
+                })
+                .finally(() => {
+                    updateShowMoreButton();
+                    updateDistrictOwnershipUI();
                 });
                 
             loadDistrictStats(state, district);
@@ -874,6 +916,7 @@ async function loadDistrictData(state, district) {
             document.getElementById('biographyContent').innerHTML = '<p>No representative information available for this district.</p>';
             loadDistrictStats(state, district);
             updateClaimButton(true);
+            updateDistrictOwnershipUI();
         }
     } catch (error) {
         console.error('Error loading district data:', error);
@@ -910,7 +953,7 @@ async function unclaimDistrict() {
         
         // Redirect to main page after short delay
         setTimeout(() => {
-            window.location.href = 'VCHouse2.html';
+            window.location.href = 'index.html';
         }, 1500);
     } catch (error) {
         console.error('Error unclaiming district:', error);
@@ -925,7 +968,7 @@ async function loadBiographyFromAPI() {
         const district = urlParams.get('district');
         const districtKey = `${state}-${district}`;
 
-        const response = await fetch(`${API_BASE}/api/get-district-biography/${districtKey}`, {
+        const response = await fetch(`${API_BASE}/api/biography/${districtKey}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -941,6 +984,7 @@ async function loadBiographyFromAPI() {
         const biographyText = document.getElementById('biographyText');
         if (biographyText) {
             biographyText.innerHTML = data.biography || 'No biography available.';
+            updateShowMoreButton();
         }
     } catch (error) {
         console.error('Error loading biography:', error);

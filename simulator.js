@@ -31,6 +31,50 @@ document.addEventListener('DOMContentLoaded', () => {
         stateSwings: {},    // Add this line
         leadershipSwing: 0
     };
+    const scenarioButtons = document.querySelectorAll('.scenario-btn');
+
+    function formatPercent(value) {
+        const numeric = Number(value) || 0;
+        return `${numeric > 0 ? '+' : ''}${numeric}%`;
+    }
+
+    function setScenarioButtonState(activeScenario) {
+        scenarioButtons.forEach(button => {
+            const matches = button.getAttribute('onclick')?.includes(`'${activeScenario}'`);
+            button.classList.toggle('active', Boolean(matches));
+        });
+    }
+
+    function syncControlValue(inputId, value, outputId = null) {
+        const input = document.getElementById(inputId);
+        if (!input) {
+            return;
+        }
+
+        input.value = value;
+        const output = outputId ? document.getElementById(outputId) : input.nextElementSibling;
+        if (output) {
+            output.textContent = formatPercent(value);
+        }
+    }
+
+    function syncControlsFromSimulation(activeScenario = 'custom') {
+        syncControlValue('nationalSwing', currentSimulation.nationalSwing);
+        Object.keys(regions).forEach(region => {
+            syncControlValue(`${region}Swing`, currentSimulation.regionalSwings[region]);
+            syncControlValue(`${region}Senate`, currentSimulation.regionalSenateResults[region]);
+        });
+
+        const stateSelect = document.getElementById('stateSelect');
+        const selectedState = stateSelect.value || stateSelect.options[0]?.value;
+        if (selectedState) {
+            stateSelect.value = selectedState;
+            syncControlValue('senateResult', currentSimulation.stateSwings[selectedState] || 0, 'stateSwingValue');
+        }
+
+        syncControlValue('leadershipResult', currentSimulation.leadershipSwing);
+        setScenarioButtonState(activeScenario);
+    }
 
     // Add the base tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -249,8 +293,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateSimulation() {
         allDistricts.forEach(({ feature, layer }) => {
             const props = feature.properties;
-            let demPct = props.demPct || 0;
-            let repPct = props.repPct || 0;
+            let demPct = (parseFloat(props.DemPct) || 0) * 100;
+            let repPct = (parseFloat(props.RepPct) || 0) * 100;
             
             // Apply national swing
             demPct += currentSimulation.nationalSwing;
@@ -286,6 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Update district style
             layer.setStyle(styleDistrict(feature));
+            bindDistrictPopup(feature, layer);
         });
 
         updateSimulationResults();
@@ -345,13 +390,26 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update the display
         document.getElementById('demSeats').textContent = demSeats;
         document.getElementById('repSeats').textContent = repSeats;
+        const summary = document.getElementById('seatSummary');
+        if (summary) {
+            const seatDelta = demSeats - repSeats;
+            if (seatDelta > 0) {
+                summary.textContent = `Democrats lead by ${seatDelta} seat${seatDelta === 1 ? '' : 's'}.`;
+            } else if (seatDelta < 0) {
+                const gap = Math.abs(seatDelta);
+                summary.textContent = `Republicans lead by ${gap} seat${gap === 1 ? '' : 's'}.`;
+            } else {
+                summary.textContent = 'Even environment.';
+            }
+        }
     }
 
     // Event Listeners
     document.getElementById('nationalSwing').addEventListener('input', e => {
         const value = parseFloat(e.target.value);
         currentSimulation.nationalSwing = value;
-        e.target.nextElementSibling.textContent = `${value > 0 ? '+' : ''}${value}%`;
+        e.target.nextElementSibling.textContent = formatPercent(value);
+        setScenarioButtonState('custom');
         updateSimulation();
     });
 
@@ -402,17 +460,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     leadershipSwing: 1
                 };
                 break;
+            case 'custom':
+                setScenarioButtonState('custom');
+                syncControlsFromSimulation('custom');
+                updateSimulation();
+                return;
         }
-        
-        // Update UI controls
-        document.getElementById('nationalSwing').value = currentSimulation.nationalSwing;
-        Object.keys(regions).forEach(region => {
-            const slider = document.getElementById(`${region}Swing`);
-            slider.value = currentSimulation.regionalSwings[region];
-            slider.nextElementSibling.textContent = 
-                `${currentSimulation.regionalSwings[region] > 0 ? '+' : ''}${currentSimulation.regionalSwings[region]}%`;
-        });
-        
+
+        syncControlsFromSimulation(scenario);
         updateSimulation();
     };
 
@@ -432,7 +487,8 @@ document.addEventListener('DOMContentLoaded', () => {
         slider.addEventListener('input', e => {
             const value = parseFloat(e.target.value);
             currentSimulation.regionalSwings[region] = value;
-            e.target.nextElementSibling.textContent = `${value > 0 ? '+' : ''}${value}%`;
+            e.target.nextElementSibling.textContent = formatPercent(value);
+            setScenarioButtonState('custom');
             updateSimulation();
         });
     });
@@ -440,8 +496,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add event listener for state results
     document.getElementById('stateSelect').addEventListener('change', e => {
         const state = e.target.value;
-        const result = parseFloat(document.getElementById('senateResult').value);
+        const result = currentSimulation.stateSwings[state] || 0;
+        syncControlValue('senateResult', result, 'stateSwingValue');
         currentSimulation.stateSwings[state] = result;
+        setScenarioButtonState('custom');
         updateSimulation();
     });
 
@@ -449,7 +507,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const value = parseFloat(e.target.value);
         const state = document.getElementById('stateSelect').value;
         currentSimulation.stateSwings[state] = value;
-        e.target.nextElementSibling.textContent = `${value > 0 ? '+' : ''}${value}%`;
+        document.getElementById('stateSwingValue').textContent = formatPercent(value);
+        setScenarioButtonState('custom');
         updateSimulation();
     });
 
@@ -459,8 +518,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSimulation.leadershipSwing = value;
         const valueSpan = e.target.nextElementSibling;
         if (valueSpan) {
-            valueSpan.textContent = `${value > 0 ? '+' : ''}${value}%`;
+            valueSpan.textContent = formatPercent(value);
         }
+        setScenarioButtonState('custom');
         updateSimulation();
     });
 
@@ -491,17 +551,20 @@ document.addEventListener('DOMContentLoaded', () => {
         removeBtn.onclick = () => {
             div.remove();
             delete currentSimulation.stateModifiers[select.value];
+            setScenarioButtonState('custom');
             updateSimulation();
         };
 
         // Add event listeners
         select.onchange = () => {
             currentSimulation.stateModifiers[select.value] = parseFloat(input.value);
+            setScenarioButtonState('custom');
             updateSimulation();
         };
 
         input.oninput = () => {
             currentSimulation.stateModifiers[select.value] = parseFloat(input.value);
+            setScenarioButtonState('custom');
             updateSimulation();
         };
 
@@ -510,6 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
         div.appendChild(removeBtn);
         stateModifiersList.appendChild(div);
     }
+    window.addStateModifier = addStateModifier;
 
     // Add event listeners for regional senate results
     Object.keys(regions).forEach(region => {
@@ -517,8 +581,11 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('input', e => {
             const value = parseFloat(e.target.value);
             currentSimulation.regionalSenateResults[region] = value;
-            e.target.nextElementSibling.textContent = `${value > 0 ? '+' : ''}${value}%`;
+            e.target.nextElementSibling.textContent = formatPercent(value);
+            setScenarioButtonState('custom');
             updateSimulation();
         });
     });
+
+    syncControlsFromSimulation('base');
 });

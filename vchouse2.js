@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let allDistricts = [];
     let representativesData = {};
     const districtLayers = new Map();
-    const API_URL = 'https://vchouse-production.up.railway.app/api';
+    const API_URL = window.APP_CONFIG.apiUrl('/api');
 
     // Load representatives data
     fetch('representatives_new.json')
@@ -57,20 +57,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function parseRepresentativeInfo(districtKey) {
+        const representativeInfo = representativesData[districtKey];
+        if (!representativeInfo || representativeInfo === 'N/A') {
+            return {
+                representativeName: 'Vacant',
+                party: 'Unknown'
+            };
+        }
+
+        const [name, partyWithParens] = representativeInfo.split(' (');
+        return {
+            representativeName: name,
+            party: partyWithParens ? partyWithParens.replace(')', '') : 'Unknown'
+        };
+    }
+
+    function refreshDistrictLayer(state, district) {
+        const districtKey = `${state}-${district}`;
+        if (!geojsonLayer) {
+            return;
+        }
+
+        geojsonLayer.eachLayer(layer => {
+            const props = layer.feature?.properties;
+            if (props && `${props.State}-${props.District}` === districtKey) {
+                onEachFeature(layer.feature, layer);
+            }
+        });
+    }
+
     // Modify onEachFeature to use proper event handling
     function onEachFeature(feature, layer) {
         if (feature.properties) {
             const props = feature.properties;
             const districtKey = `${props.State}-${props.District}`;
-            const representativeInfo = representativesData[districtKey];
-            let representativeName = 'Vacant';
-            let party = 'Unknown';
-
-            if (representativeInfo && representativeInfo !== 'N/A') {
-                const [name, partyWithParens] = representativeInfo.split(' (');
-                representativeName = name;
-                party = partyWithParens ? partyWithParens.replace(')', '') : 'Unknown';
-            }
+            const { representativeName, party } = parseRepresentativeInfo(districtKey);
 
             const popupContent = `
                 <div class="district-popup">
@@ -196,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Sending registration data:', registrationData); // Debug log
 
             try {
-                const response = await fetch('/api/register', {
+                const response = await fetch(`${API_URL}/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -292,18 +314,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show detailed district information in the sidebar
     function showDistrictDetails(state, district) {
         const districtKey = `${state}-${district}`;
-        const representativeInfo = representativesData[districtKey];
-        let representativeName = 'Vacant';
-        let party = 'Unknown';
+        const { representativeName, party } = parseRepresentativeInfo(districtKey);
         let partyClass = '';
-        let isVacant = true;
 
-        if (representativeInfo && representativeInfo !== 'N/A') {
-            const [name, partyWithParens] = representativeInfo.split(' (');
-            representativeName = name;
-            party = partyWithParens ? partyWithParens.replace(')', '') : 'Unknown';
+        if (party !== 'Unknown') {
             partyClass = party.toLowerCase();
-            isVacant = false;
         }
 
         const detailsContent = `
@@ -329,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('/api/claim-district', {
+            const response = await fetch(`${API_URL}/claim-district`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -342,10 +357,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 showMessage('District claimed successfully!', 'success');
+                representativesData[`${state}-${district}`] = `${currentUser.fullName} (${currentUser.party.charAt(0)})`;
                 // Refresh the district display
                 showDistrictDetails(state, district);
                 // Update the map
-                loadDistrictData();
+                refreshDistrictLayer(state, district);
             } else {
                 showMessage(data.message || 'Failed to claim district', 'error');
             }
@@ -373,12 +389,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (geojsonLayer) {
             geojsonLayer.eachLayer(layer => {
                 const props = layer.feature.properties;
+                const districtKey = `${props.State}-${props.District}`;
                 const stateName = props.State;
-                const districtNum = String(props.District); // Convert to string
-                const repName = props.Representative || 'Vacant';
+                const districtNum = String(props.District);
+                const districtLabel = `${stateName}-${districtNum}`;
+                const { representativeName: repName } = parseRepresentativeInfo(districtKey);
                 
                 if (stateName.toLowerCase().includes(searchTerm) ||
                     districtNum.toLowerCase().includes(searchTerm) ||
+                    districtLabel.toLowerCase().includes(searchTerm) ||
                     repName.toLowerCase().includes(searchTerm)) {
                     results.push({
                         state: stateName,

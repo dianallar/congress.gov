@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is logged in
     try {
-        const response = await fetch('/api/auth-status', {
+        const response = await fetch(`${API_BASE}/api/auth-status`, {
             credentials: 'include'
         });
         const data = await response.json();
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('adminControls').style.display = 'block';
             }
         } else {
-            window.location.href = 'VCHouse2.html';
+            window.location.href = 'index.html';
         }
     } catch (error) {
         console.error('Error checking auth status:', error);
@@ -34,9 +34,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (profileForm) {
         profileForm.addEventListener('submit', handleProfileSubmit);
     }
+
+    const generateAdminKeyBtn = document.getElementById('generateAdminKeyBtn');
+    if (generateAdminKeyBtn) {
+        generateAdminKeyBtn.addEventListener('click', generateAdminKey);
+    }
+
+    const redeemAdminKeyBtn = document.getElementById('redeemAdminKeyBtn');
+    if (redeemAdminKeyBtn) {
+        redeemAdminKeyBtn.addEventListener('click', redeemAdminKey);
+    }
 });
 
 let currentUser = null;
+const API_BASE = window.APP_CONFIG.apiBase;
 
 function populateProfileForm(user) {
     const elements = {
@@ -55,12 +66,12 @@ function populateProfileForm(user) {
     
     if (elements.currentPortrait) {
         if (user.portrait) {
-            elements.currentPortrait.src = `Portraits/${user.portrait}`;
+            elements.currentPortrait.src = `${API_BASE}/Portraits/${user.portrait}`;
             elements.currentPortrait.onerror = function() {
-                this.src = 'Portraits/default.svg';
+                this.src = `${API_BASE}/Portraits/default.svg`;
             };
         } else {
-            elements.currentPortrait.src = 'Portraits/default.svg';
+            elements.currentPortrait.src = `${API_BASE}/Portraits/default.svg`;
         }
     }
     
@@ -94,7 +105,7 @@ async function handleProfilePictureUpload(event) {
         formData.append('portrait', file);
         formData.append('districtKey', districtKey);
 
-        const response = await fetch('/api/update-portrait', {
+        const response = await fetch(`${API_BASE}/api/update-portrait`, {
             method: 'POST',
             credentials: 'include',
             body: formData
@@ -110,7 +121,7 @@ async function handleProfilePictureUpload(event) {
         // Update the portrait display
         const portraitImg = document.getElementById('currentPortrait');
         if (portraitImg && data.filename) {
-            portraitImg.src = `Portraits/${data.filename}?t=${Date.now()}`;
+            portraitImg.src = `${API_BASE}/Portraits/${data.filename}?t=${Date.now()}`;
         }
 
         showMessage('Portrait updated successfully', 'success');
@@ -120,48 +131,6 @@ async function handleProfilePictureUpload(event) {
     }
 }
 
-// Add function to update district biography
-async function updateDistrictBiography(biography) {
-    try {
-        // First get the claimed district
-        const districtResponse = await fetch('/api/claimed-district', {
-            credentials: 'include'
-        });
-        const districtData = await districtResponse.json();
-        
-        if (!districtResponse.ok || !districtData.district) {
-            // No district claimed, skip bio update
-            return;
-        }
-
-        // Update district data with new biography
-        const response = await fetch('/api/update-district', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                district: districtData.district,
-                biography: biography
-            }),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to update district biography');
-        }
-
-        const data = await response.json();
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to update district biography');
-        }
-    } catch (error) {
-        console.error('Error updating district biography:', error);
-        showMessage('Error updating district biography', 'error');
-    }
-}
-
-// Update profile form submission to sync with district bio
 async function handleProfileSubmit(event) {
     event.preventDefault();
 
@@ -173,7 +142,7 @@ async function handleProfileSubmit(event) {
     };
 
     try {
-        const response = await fetch('/api/update-profile', {
+        const response = await fetch(`${API_BASE}/api/update-profile`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -186,9 +155,6 @@ async function handleProfileSubmit(event) {
         if (response.ok) {
             showMessage('Profile updated successfully', 'success');
             currentUser = { ...currentUser, ...formData };
-            
-            // Update district biography if district is claimed
-            await updateDistrictBiography(formData.biography);
         } else {
             showMessage(data.message || 'Failed to update profile', 'error');
         }
@@ -200,7 +166,7 @@ async function handleProfileSubmit(event) {
 
 async function loadClaimedDistrict() {
     try {
-        const response = await fetch('/api/claimed-district', { credentials: 'include' });
+        const response = await fetch(`${API_BASE}/api/claimed-district`, { credentials: 'include' });
         const data = await response.json();
         const districtElement = document.getElementById('claimedDistrict');
         if (districtElement) {
@@ -245,7 +211,7 @@ function showMessage(message, type = 'success') {
 
 function updateUIForUser() {
     if (!currentUser) {
-        window.location.href = 'VCHouse2.html';
+        window.location.href = 'index.html';
         return;
     }
 
@@ -264,6 +230,11 @@ function updateUIForUser() {
         adminControls.style.display = currentUser.isAdmin ? 'block' : 'none';
     }
 
+    const adminKeyIssuer = document.getElementById('adminKeyIssuer');
+    if (adminKeyIssuer) {
+        adminKeyIssuer.style.display = currentUser.email === 'sydneybatchags@gmail.com' ? 'block' : 'none';
+    }
+
     // Update profile form visibility
     const profileForm = document.getElementById('profileForm');
     if (profileForm) {
@@ -274,18 +245,71 @@ function updateUIForUser() {
 // Add logout function if not already present
 async function logout() {
     try {
-        const response = await fetch('/api/logout', {
+            const response = await fetch(`${API_BASE}/api/logout`, {
             method: 'POST',
             credentials: 'include'
         });
 
         if (response.ok) {
-            window.location.href = 'VCHouse2.html';
+            window.location.href = 'index.html';
         } else {
             showMessage('Logout failed', 'error');
         }
     } catch (error) {
         console.error('Error during logout:', error);
         showMessage('Error during logout', 'error');
+    }
+}
+
+async function generateAdminKey() {
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/generate-key`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            showMessage(data.message || 'Failed to generate admin key', 'error');
+            return;
+        }
+
+        const output = document.getElementById('generatedAdminKey');
+        if (output) {
+            output.style.display = 'block';
+            output.textContent = `New admin key: ${data.key.key}`;
+        }
+        showMessage('Admin key generated', 'success');
+    } catch (error) {
+        showMessage('Failed to generate admin key', 'error');
+    }
+}
+
+async function redeemAdminKey() {
+    const input = document.getElementById('adminKeyInput');
+    const key = input?.value?.trim();
+    if (!key) {
+        showMessage('Enter an admin key first', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/redeem-key`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ key })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            showMessage(data.message || 'Failed to redeem admin key', 'error');
+            return;
+        }
+
+        showMessage('Admin access granted. Reloading profile...', 'success');
+        setTimeout(() => window.location.reload(), 800);
+    } catch (error) {
+        showMessage('Failed to redeem admin key', 'error');
     }
 }

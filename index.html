@@ -8,11 +8,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-blue: #003366;
-            --secondary-blue: #005DA6;
-            --accent-gold: #B5985A;
-            --text-dark: #333333;
-            --background-light: #F5F5F5;
+            --primary-blue: #102a43;
+            --secondary-blue: #1f5f8b;
+            --accent-gold: #d1a95b;
+            --accent-red: #b2453d;
+            --text-dark: #1f2933;
+            --background-light: #eef3f7;
+            --surface: rgba(255, 255, 255, 0.92);
+            --surface-border: rgba(16, 42, 67, 0.12);
         }
 
         * {
@@ -23,28 +26,38 @@
         }
 
         body {
-            background-color: var(--background-light);
+            min-height: 100vh;
+            color: var(--text-dark);
+            background:
+                radial-gradient(circle at top left, rgba(209, 169, 91, 0.18), transparent 28%),
+                linear-gradient(180deg, #dfe9f2 0%, #eef3f7 25%, #f7f3ea 100%);
         }
 
         .header {
-            background-color: var(--primary-blue);
+            background: rgba(16, 42, 67, 0.94);
             color: white;
-            padding: 1rem 2rem;
+            padding: 1.1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 18px 50px rgba(16, 42, 67, 0.18);
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            backdrop-filter: blur(16px);
         }
 
         .nav-menu {
-            background-color: var(--secondary-blue);
-            padding: 0.5rem 2rem;
+            background: linear-gradient(90deg, rgba(31, 95, 139, 0.98), rgba(16, 42, 67, 0.92));
+            padding: 0.8rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .nav-menu ul {
             list-style: none;
             display: flex;
             gap: 2rem;
+            flex-wrap: wrap;
         }
 
         .nav-menu a {
@@ -56,33 +69,101 @@
         .main-content {
             display: grid;
             grid-template-columns: 250px 1fr 300px;
-            gap: 1rem;
-            padding: 1rem;
+            gap: 1.25rem;
+            padding: 1.25rem 1rem 2rem;
             max-width: 1600px;
             margin: 0 auto;
         }
 
         .sidebar {
-            background: white;
-            padding: 1rem;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: var(--surface);
+            padding: 1.25rem;
+            border-radius: 18px;
+            border: 1px solid var(--surface-border);
+            box-shadow: 0 20px 48px rgba(16, 42, 67, 0.08);
         }
 
         #map {
             height: 700px;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 24px;
+            border: 1px solid rgba(16, 42, 67, 0.08);
+            box-shadow: 0 24px 60px rgba(16, 42, 67, 0.12);
         }
 
         .district-details {
-            background: white;
+            background: var(--surface);
             padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 18px;
+            border: 1px solid var(--surface-border);
+            box-shadow: 0 20px 48px rgba(16, 42, 67, 0.08);
             height: 100%;
             display: flex;
             flex-direction: column;
+        }
+
+        .hero {
+            max-width: 1600px;
+            margin: 1.25rem auto;
+            padding: 0 1rem;
+        }
+
+        .hero-panel {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 1.5rem;
+            padding: 1.75rem;
+            border-radius: 28px;
+            color: white;
+            background:
+                linear-gradient(135deg, rgba(16, 42, 67, 0.96), rgba(31, 95, 139, 0.88)),
+                linear-gradient(45deg, rgba(209, 169, 91, 0.18), rgba(178, 69, 61, 0.16));
+            box-shadow: 0 28px 80px rgba(16, 42, 67, 0.2);
+        }
+
+        .hero-copy h2 {
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            line-height: 1.05;
+            margin-bottom: 0.85rem;
+        }
+
+        .hero-copy p {
+            max-width: 58ch;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.88);
+        }
+
+        .hero-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.9rem;
+            align-content: center;
+        }
+
+        .hero-stat {
+            padding: 1rem;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+
+        .hero-stat strong {
+            display: block;
+            font-size: 1.8rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .hero-stat span {
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 0.95rem;
+        }
+
+        .sidebar-section-title {
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--secondary-blue);
+            margin-bottom: 0.7rem;
         }
 
         .district-header {
@@ -169,9 +250,10 @@
 
         #districtSearch {
             width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 0.8rem 0.95rem;
+            border: 1px solid rgba(16, 42, 67, 0.14);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .user-controls {
@@ -183,9 +265,9 @@
         .btn {
             background-color: var(--secondary-blue);
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 0.7rem 1.1rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 999px;
             cursor: pointer;
             font-weight: 600;
         }
@@ -412,9 +494,10 @@
         /* District Details Styles */
         .district-details {
             padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: var(--surface);
+            border-radius: 18px;
+            border: 1px solid var(--surface-border);
+            box-shadow: 0 20px 48px rgba(16, 42, 67, 0.08);
         }
 
         .details-header {
@@ -529,6 +612,76 @@
             filter: blur(4px);
             opacity: 0.5;
         }
+
+        @media (max-width: 1100px) {
+            .hero-panel,
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            #map {
+                height: 560px;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .header,
+            .nav-menu {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .nav-menu ul {
+                gap: 1rem;
+            }
+
+            .hero-panel {
+                padding: 1.25rem;
+            }
+
+            .hero-metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .header h1 {
+            letter-spacing: 0.04em;
+        }
+
+        .user-menu {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-menu a {
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: white;
+        }
+
+        .district-placeholder {
+            border: 1px dashed rgba(16, 42, 67, 0.16);
+            border-radius: 18px;
+            background: rgba(248, 250, 252, 0.92);
+        }
+
+        .quick-links li a {
+            background: rgba(31, 95, 139, 0.06);
+            border-radius: 12px;
+            padding: 0.65rem 0.75rem;
+        }
     </style>
 </head>
 <body>
@@ -542,7 +695,7 @@
 
     <nav class="nav-menu">
         <ul>
-            <li><a href="VCHouse2.html">Home</a></li>
+            <li><a href="index.html">Home</a></li>
             <li><a href="leadership.html">Leadership</a></li>
             <li><a href="legislation.html">Legislation</a></li>
             <li><a href="documents.html">Documents</a></li>
@@ -553,6 +706,7 @@
     <main class="main-content">
         <aside class="sidebar">
             <div class="quick-links">
+                <div class="sidebar-section-title">Directory</div>
                 <h3>Quick Links</h3>
                 <ul>
                     <li><a href="leadership.html">House Leadership</a></li>
@@ -563,6 +717,7 @@
                 </ul>
             </div>
             <div class="search-container">
+                <div class="sidebar-section-title">Find A District</div>
                 <input type="text" id="districtSearch" placeholder="Search districts...">
                 <div id="searchResults"></div>
             </div>
@@ -646,6 +801,7 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="app-config.js"></script>
     <script src="vchouse2.js"></script>
 </body>
 </html>

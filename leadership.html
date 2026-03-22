@@ -7,286 +7,597 @@
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-blue: #003366;
-            --secondary-blue: #005DA6;
-            --accent-gold: #B5985A;
-            --text-dark: #333333;
-            --background-light: #F5F5F5;
+            --ink: #102a43;
+            --blue: #1f5f8b;
+            --gold: #d1a95b;
+            --bg: #eef3f7;
+            --surface: rgba(255, 255, 255, 0.92);
+            --border: rgba(16, 42, 67, 0.12);
+            --shadow: 0 22px 50px rgba(16, 42, 67, 0.09);
         }
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             font-family: 'Source Sans Pro', sans-serif;
         }
 
         body {
-            background-color: var(--background-light);
-            line-height: 1.6;
+            min-height: 100vh;
+            color: #1f2933;
+            background:
+                radial-gradient(circle at top left, rgba(209, 169, 91, 0.18), transparent 28%),
+                linear-gradient(180deg, #dfe9f2 0%, #eef3f7 25%, #f7f3ea 100%);
         }
 
         .header {
-            background-color: var(--primary-blue);
-            color: white;
-            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 20;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 1rem 1.5rem;
+            background: rgba(16, 42, 67, 0.94);
+            color: white;
+            box-shadow: 0 16px 42px rgba(16, 42, 67, 0.18);
+            backdrop-filter: blur(16px);
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+        .header a {
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
         }
 
         .btn {
-            background-color: var(--secondary-blue);
-            color: white;
-            padding: 0.5rem 1rem;
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn:hover {
-            background-color: var(--primary-blue);
-        }
-
-        .leadership-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .leadership-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .leadership-header {
-            background-color: var(--primary-blue);
+            border-radius: 999px;
+            padding: 0.75rem 1.1rem;
+            background: var(--blue);
             color: white;
-            padding: 1rem;
-            text-align: center;
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
         }
 
-        .leadership-content {
-            padding: 1rem;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .btn.secondary {
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.18);
         }
 
-        .leadership-photo {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
+        .page {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 2.5rem;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.3fr 0.7fr;
+            gap: 1.25rem;
+            padding: 1.6rem;
+            border-radius: 28px;
+            background:
+                linear-gradient(135deg, rgba(16, 42, 67, 0.96), rgba(31, 95, 139, 0.88)),
+                linear-gradient(45deg, rgba(209, 169, 91, 0.18), rgba(178, 69, 61, 0.16));
+            color: white;
+            box-shadow: 0 30px 80px rgba(16, 42, 67, 0.18);
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1.05;
+            margin-bottom: 0.8rem;
+        }
+
+        .hero p {
+            max-width: 58ch;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.6;
+        }
+
+        .hero-note {
+            align-self: stretch;
+            padding: 1.1rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            display: grid;
+            gap: 0.55rem;
+        }
+
+        .hero-note strong {
+            font-size: 1.5rem;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 1.25rem;
+            margin-top: 1.4rem;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .leadership-list {
+            padding: 1.25rem;
+            display: grid;
+            gap: 1rem;
+        }
+
+        .slot-card {
+            display: grid;
+            grid-template-columns: 92px 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(16, 42, 67, 0.08);
+        }
+
+        .slot-card.empty {
+            background: rgba(16, 42, 67, 0.04);
+            border-style: dashed;
+        }
+
+        .portrait {
+            width: 92px;
+            height: 114px;
+            border-radius: 18px;
             object-fit: cover;
-            margin: 1rem 0;
-            border: 3px solid var(--accent-gold);
+            border: 3px solid rgba(209, 169, 91, 0.55);
+            background: rgba(16, 42, 67, 0.06);
         }
 
-        .leadership-info {
-            text-align: center;
-            margin-top: 1rem;
+        .slot-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            align-items: flex-start;
         }
 
-        .leadership-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 0.5rem;
+        .slot-role {
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--blue);
+            margin-bottom: 0.35rem;
         }
 
-        .leadership-party {
-            font-size: 1rem;
-            color: #666;
-            margin-bottom: 0.5rem;
+        .slot-name {
+            font-size: 1.45rem;
+            color: var(--ink);
+            line-height: 1.1;
         }
 
-        .leadership-district {
-            font-size: 0.875rem;
-            color: #666;
+        .slot-meta {
+            margin-top: 0.45rem;
+            color: #52606d;
         }
 
-        .leadership-bio {
-            margin-top: 1rem;
-            text-align: left;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 4px;
+        .status-pill {
+            align-self: start;
+            white-space: nowrap;
+            border-radius: 999px;
+            padding: 0.4rem 0.7rem;
+            background: rgba(31, 95, 139, 0.12);
+            color: var(--blue);
+            font-size: 0.86rem;
+            font-weight: 700;
         }
 
-        .section-title {
-            color: var(--primary-blue);
-            margin-bottom: 2rem;
-            text-align: center;
-            font-size: 2rem;
+        .empty .status-pill {
+            background: rgba(82, 96, 109, 0.12);
+            color: #52606d;
         }
 
-        .party-section {
-            margin-bottom: 3rem;
+        .slot-bio {
+            margin-top: 0.85rem;
+            line-height: 1.6;
         }
 
-        .party-title {
-            color: var(--text-dark);
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--accent-gold);
+        .slot-contact {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            margin-top: 0.9rem;
         }
 
-        .contact-info {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 4px;
+        .slot-contact span {
+            border-radius: 999px;
+            padding: 0.4rem 0.7rem;
+            background: rgba(16, 42, 67, 0.06);
+            color: #334e68;
+            font-size: 0.92rem;
         }
 
-        .contact-info p {
-            margin-bottom: 0.5rem;
+        .admin-panel {
+            padding: 1.25rem;
+            position: sticky;
+            top: 5.6rem;
+            align-self: start;
+            display: grid;
+            gap: 1rem;
+        }
+
+        .admin-panel h2,
+        .leadership-list h2 {
+            color: var(--ink);
+        }
+
+        .admin-copy {
+            color: #52606d;
+            line-height: 1.55;
+        }
+
+        .field {
+            display: grid;
+            gap: 0.35rem;
+        }
+
+        .field label {
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            border: 1px solid rgba(16, 42, 67, 0.14);
+            border-radius: 14px;
+            padding: 0.8rem 0.9rem;
+            background: rgba(255, 255, 255, 0.96);
+            color: #1f2933;
+        }
+
+        .field textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 0.7rem;
+            flex-wrap: wrap;
+        }
+
+        .helper,
+        .message {
+            font-size: 0.94rem;
+            color: #52606d;
+            line-height: 1.5;
+        }
+
+        .message.error {
+            color: #b2453d;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 980px) {
+            .hero,
+            .layout,
+            .slot-card {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-panel {
+                position: static;
+            }
+
+            .portrait {
+                width: 112px;
+                height: 136px;
+            }
         }
     </style>
 </head>
 <body>
     <header class="header">
-        <h1>House Leadership</h1>
-        <nav>
-            <a href="index.html" class="btn">Back to Home</a>
-        </nav>
+        <a href="index.html">VCHouse.gov</a>
+        <a href="index.html" class="btn secondary">Back to Map</a>
     </header>
 
-    <div class="container">
-        <h2 class="section-title">House Leadership</h2>
-
-        <div class="party-section">
-            <h3 class="party-title">Majority Leadership</h3>
-            <div class="leadership-grid">
-                <div class="leadership-card">
-                    <div class="leadership-header">
-                        <h3>Speaker of the House</h3>
-                    </div>
-                    <div class="leadership-content">
-                        <img src="Portraits/ME-3.jpg" alt="Speaker" class="leadership-photo" onerror="this.src='Portraits/default.jpg'">
-                        <div class="leadership-info">
-                            <div class="leadership-name">Curtis Langley</div>
-                            <div class="leadership-party">Independent</div>
-                            <div class="leadership-district">Maine's 3rd Congressional District</div>
-                        </div>
-                        <div class="leadership-bio">
-                            <p>Elected as Speaker in May 2025, Langley has served as Governor of Olympia and Speaker <i>Pro Tempore.</i> </p>
-                        </div>
-                        <div class="contact-info">
-                            <p>Office: H-232 The Capitol</p>
-                            <p>Phone: (202) 225-0100</p>
-                            <p>Email: speaker@vchouse.gov</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="leadership-card">
-                    <div class="leadership-header">
-                        <h3>Majority Leader</h3>
-                    </div>
-                    <div class="leadership-content">
-                        <img src="Portraits/majority-leader.jpg" alt="Majority Leader" class="leadership-photo" onerror="this.src='Portraits/default.jpg'">
-                        <div class="leadership-info">
-                            <div class="leadership-name">Jacob Iron</div>
-                            <div class="leadership-party">Republican</div>
-                            <div class="leadership-district">Undefined</div>
-                        </div>
-                        <div class="leadership-bio">
-                            <p>Elected Majority Leader in May 2025.</p>
-                        </div>
-                        <div class="contact-info">
-                            <p>Office: H-148 The Capitol</p>
-                            <p>Phone: (202) 225-0200</p>
-                            <p>Email: majority.leader@vchouse.gov</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="leadership-card">
-                    <div class="leadership-header">
-                        <h3>Majority Whip</h3>
-                    </div>
-                    <div class="leadership-content">
-                        <img src="Portraits/majority-whip.jpg" alt="Majority Whip" class="leadership-photo" onerror="this.src='Portraits/default.jpg'">
-                        <div class="leadership-info">
-                            <div class="leadership-name">Michael Davis</div>
-                            <div class="leadership-party">Republican</div>
-                            <div class="leadership-district">Florida's 3rd District</div>
-                        </div>
-                        <div class="leadership-bio">
-                            <p>Responsible for mobilizing party votes on key legislation.</p>
-                        </div>
-                        <div class="contact-info">
-                            <p>Office: H-329 The Capitol</p>
-                            <p>Phone: (202) 225-0300</p>
-                            <p>Email: majority.whip@vchouse.gov</p>
-                        </div>
-                    </div>
-                </div>
+    <main class="page">
+        <section class="hero">
+            <div>
+                <h1>House Leadership</h1>
+                <p>Leadership seats now fill dynamically. If a role has not been assigned by a moderator, it stays open here until someone is placed into that office.</p>
             </div>
-        </div>
-
-        <div class="party-section">
-            <h3 class="party-title">Minority Leadership</h3>
-            <div class="leadership-grid">
-                <div class="leadership-card">
-                    <div class="leadership-header">
-                        <h3>Minority Leader</h3>
-                    </div>
-                    <div class="leadership-content">
-                        <img src="Portraits/IL-11.jpg" alt="Minority Leader" class="leadership-photo" onerror="this.src='Portraits/default.jpg'">
-                        <div class="leadership-info">
-                            <div class="leadership-name">Ducky Anka</div>
-                            <div class="leadership-party">Democrat</div>
-                            <div class="leadership-district">Illinois's 11th District</div>
-                        </div>
-                        <div class="leadership-bio">
-                            <p>Ducky Anka has been the Minority Leader of the House since April 2025. They have formerly represented Lincoln in the United States Senate and served as Ambassador to the United Nations.</p>
-                        </div>
-                        <div class="contact-info">
-                            <p>Office: H-204 The Capitol</p>
-                            <p>Phone: (202) 225-0400</p>
-                            <p>Email: minority.leader@vchouse.gov</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="leadership-card">
-                    <div class="leadership-header">
-                        <h3>Minority Whip</h3>
-                    </div>
-                    <div class="leadership-content">
-                        <img src="Portraits/minority-whip.jpg" alt="Minority Whip" class="leadership-photo" onerror="this.src='Portraits/default.jpg'">
-                        <div class="leadership-info">
-                            <div class="leadership-name">David Kim</div>
-                            <div class="leadership-party">Democrat</div>
-                            <div class="leadership-district">California's 5th District</div>
-                        </div>
-                        <div class="leadership-bio">
-                            <p>Coordinating minority party positions and vote counting.</p>
-                        </div>
-                        <div class="contact-info">
-                            <p>Office: H-156 The Capitol</p>
-                            <p>Phone: (202) 225-0500</p>
-                            <p>Email: minority.whip@vchouse.gov</p>
-                        </div>
-                    </div>
-                </div>
+            <div class="hero-note">
+                <span>Current system</span>
+                <strong>Ranked by office</strong>
+                <p>Speaker seats render first, followed by floor leaders, officers, and presiding roles.</p>
             </div>
-        </div>
-    </div>
+        </section>
+
+        <section class="layout">
+            <div class="panel leadership-list">
+                <h2>Leadership Seats</h2>
+                <div id="leadershipSeats"></div>
+            </div>
+
+            <aside class="panel admin-panel hidden" id="adminPanel">
+                <div>
+                    <h2>Assign Leadership</h2>
+                    <p class="admin-copy">Pick a seat and attach it to a current representative. Reassigning a role replaces the previous occupant automatically.</p>
+                </div>
+                <form id="leadershipForm">
+                    <div class="field">
+                        <label for="roleSelect">Leadership role</label>
+                        <select id="roleSelect" required></select>
+                    </div>
+                    <div class="field">
+                        <label for="districtSelect">Representative</label>
+                        <select id="districtSelect" required></select>
+                    </div>
+                    <div class="field">
+                        <label for="officeInput">Office</label>
+                        <input id="officeInput" type="text" placeholder="H-232 The Capitol">
+                    </div>
+                    <div class="field">
+                        <label for="phoneInput">Phone</label>
+                        <input id="phoneInput" type="text" placeholder="(202) 225-0100">
+                    </div>
+                    <div class="field">
+                        <label for="emailInput">Email</label>
+                        <input id="emailInput" type="email" placeholder="speaker@vchouse.gov">
+                    </div>
+                    <div class="field">
+                        <label for="bioInput">Seat note</label>
+                        <textarea id="bioInput" placeholder="Optional leadership-specific note"></textarea>
+                    </div>
+                    <div class="admin-actions">
+                        <button type="submit" class="btn">Save Assignment</button>
+                        <button type="button" class="btn secondary" id="clearRoleBtn">Clear Selected Role</button>
+                    </div>
+                    <p class="helper">Leaving a role unassigned keeps it blank on the public page.</p>
+                    <p class="message" id="adminMessage"></p>
+                </form>
+            </aside>
+        </section>
+    </main>
+
+    <script src="app-config.js"></script>
+    <script>
+        const API_BASE = window.APP_CONFIG.apiBase;
+        const seatsContainer = document.getElementById('leadershipSeats');
+        const adminPanel = document.getElementById('adminPanel');
+        const roleSelect = document.getElementById('roleSelect');
+        const districtSelect = document.getElementById('districtSelect');
+        const officeInput = document.getElementById('officeInput');
+        const phoneInput = document.getElementById('phoneInput');
+        const emailInput = document.getElementById('emailInput');
+        const bioInput = document.getElementById('bioInput');
+        const adminMessage = document.getElementById('adminMessage');
+
+        let currentUser = null;
+        let leadershipRoles = [];
+        let representatives = [];
+        let assignments = [];
+
+        function escapeHtml(value) {
+            return String(value || '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                '\'': '&#39;'
+            }[char]));
+        }
+
+        function slugify(value) {
+            return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        }
+
+        function normalizePartyClass(value) {
+            const party = String(value || '').toLowerCase();
+            if (party.includes('dem')) return 'Democrat';
+            if (party.includes('rep')) return 'Republican';
+            if (party.includes('ind')) return 'Independent';
+            return value || 'Unknown';
+        }
+
+        function setMessage(text, isError = false) {
+            adminMessage.textContent = text || '';
+            adminMessage.className = `message${isError ? ' error' : ''}`;
+        }
+
+        function fillRoleOptions() {
+            roleSelect.innerHTML = leadershipRoles
+                .map(role => `<option value="${escapeHtml(role)}">${escapeHtml(role)}</option>`)
+                .join('');
+        }
+
+        function fillRepresentativeOptions() {
+            districtSelect.innerHTML = representatives
+                .map(rep => `<option value="${escapeHtml(rep.districtKey)}">${escapeHtml(rep.name)} - ${escapeHtml(rep.districtLabel)}</option>`)
+                .join('');
+        }
+
+        function getAssignmentByRole(role) {
+            return assignments.find(entry => entry.role === role) || null;
+        }
+
+        function hydrateFormForRole(role) {
+            const assignment = getAssignmentByRole(role);
+            if (!assignment) {
+                if (representatives[0]) {
+                    districtSelect.value = representatives[0].districtKey;
+                }
+                officeInput.value = '';
+                phoneInput.value = '';
+                emailInput.value = '';
+                bioInput.value = '';
+                return;
+            }
+
+            districtSelect.value = assignment.districtKey;
+            officeInput.value = assignment.office || '';
+            phoneInput.value = assignment.phone || '';
+            emailInput.value = assignment.email || '';
+            bioInput.value = assignment.bio || '';
+        }
+
+        function renderSeats() {
+            const markup = leadershipRoles.map(role => {
+                const assignment = getAssignmentByRole(role);
+                if (!assignment) {
+                    return `
+                        <article class="slot-card empty">
+                            <img class="portrait" src="Portraits/default.jpg" alt="${escapeHtml(role)} vacancy">
+                            <div>
+                                <div class="slot-top">
+                                    <div>
+                                        <div class="slot-role">${escapeHtml(role)}</div>
+                                        <h3 class="slot-name">Seat Open</h3>
+                                    </div>
+                                    <span class="status-pill">Unassigned</span>
+                                </div>
+                                <p class="slot-bio">This office has not been assigned yet.</p>
+                            </div>
+                        </article>
+                    `;
+                }
+
+                const contactBits = [
+                    assignment.districtLabel,
+                    normalizePartyClass(assignment.party),
+                    assignment.office,
+                    assignment.phone,
+                    assignment.email
+                ].filter(Boolean);
+
+                return `
+                    <article class="slot-card">
+                        <img class="portrait" src="${escapeHtml(assignment.portrait || 'Portraits/default.jpg')}" alt="${escapeHtml(assignment.representativeName)} portrait" onerror="this.src='Portraits/default.jpg'">
+                        <div>
+                            <div class="slot-top">
+                                <div>
+                                    <div class="slot-role">${escapeHtml(role)}</div>
+                                    <h3 class="slot-name">${escapeHtml(assignment.representativeName)}</h3>
+                                    <div class="slot-meta">${escapeHtml(assignment.districtLabel)} - ${escapeHtml(normalizePartyClass(assignment.party))}</div>
+                                </div>
+                                <span class="status-pill">Assigned</span>
+                            </div>
+                            <p class="slot-bio">${escapeHtml(assignment.bio || 'No leadership note added yet.')}</p>
+                            <div class="slot-contact">
+                                ${contactBits.map(bit => `<span>${escapeHtml(bit)}</span>`).join('')}
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            seatsContainer.innerHTML = markup;
+        }
+
+        async function loadLeadership() {
+            const response = await fetch(`${API_BASE}/api/leadership`, {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            leadershipRoles = data.roles || [];
+            representatives = data.representatives || [];
+            assignments = data.leadership || [];
+
+            fillRoleOptions();
+            fillRepresentativeOptions();
+            hydrateFormForRole(leadershipRoles[0]);
+            renderSeats();
+        }
+
+        async function loadAuth() {
+            const response = await fetch(`${API_BASE}/api/auth-status`, {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            currentUser = data.user || null;
+            if (currentUser && currentUser.isAdmin) {
+                adminPanel.classList.remove('hidden');
+            }
+        }
+
+        roleSelect.addEventListener('change', () => {
+            hydrateFormForRole(roleSelect.value);
+            setMessage('');
+        });
+
+        document.getElementById('leadershipForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            setMessage('');
+
+            const role = roleSelect.value;
+            const payload = {
+                id: slugify(role),
+                role,
+                districtKey: districtSelect.value,
+                section: 'Leadership',
+                office: officeInput.value.trim(),
+                phone: phoneInput.value.trim(),
+                email: emailInput.value.trim(),
+                bio: bioInput.value.trim()
+            };
+
+            const response = await fetch(`${API_BASE}/api/admin/leadership`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                setMessage(data.message || 'Unable to save assignment.', true);
+                return;
+            }
+
+            assignments = data.leadership || [];
+            renderSeats();
+            hydrateFormForRole(role);
+            setMessage('Leadership seat updated.');
+        });
+
+        document.getElementById('clearRoleBtn').addEventListener('click', async () => {
+            setMessage('');
+            const role = roleSelect.value;
+            const response = await fetch(`${API_BASE}/api/admin/leadership/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ id: slugify(role) })
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                setMessage(data.message || 'Unable to clear assignment.', true);
+                return;
+            }
+
+            assignments = data.leadership || [];
+            renderSeats();
+            hydrateFormForRole(role);
+            setMessage('Leadership seat cleared.');
+        });
+
+        Promise.all([loadAuth(), loadLeadership()]).catch((error) => {
+            console.error('Failed to load leadership page:', error);
+            seatsContainer.innerHTML = '<p class="message error">Leadership data could not be loaded right now.</p>';
+        });
+    </script>
 </body>
-</html> 
+</html>

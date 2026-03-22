@@ -196,6 +196,18 @@
             font-size: 1.5rem;
         }
 
+        .biography-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .biography-header h2 {
+            margin-bottom: 0;
+        }
+
         .biography p {
             line-height: 1.6;
             color: var(--text-dark);
@@ -687,6 +699,178 @@
             background-color: var(--accent-gold);
             color: white;
         }
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(209, 169, 91, 0.16), transparent 26%),
+                linear-gradient(180deg, #dfe9f2 0%, #eef3f7 42%, #f7f4ec 100%);
+        }
+
+        .header {
+            background: rgba(16, 42, 67, 0.96);
+            box-shadow: 0 16px 42px rgba(16, 42, 67, 0.18);
+            position: sticky;
+            top: 0;
+            z-index: 25;
+        }
+
+        .nav-menu {
+            background: linear-gradient(90deg, rgba(31, 95, 139, 0.98), rgba(16, 42, 67, 0.92));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-menu a {
+            border-radius: 999px;
+            padding: 0.35rem 0.85rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .district-page {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 1.25rem 1rem 2rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.75rem 1rem;
+            border-radius: 999px;
+            background: var(--primary-blue);
+            color: white;
+            border: 1px solid rgba(16, 42, 67, 0.14);
+            box-shadow: 0 12px 30px rgba(16, 42, 67, 0.08);
+            margin-bottom: 1rem;
+        }
+
+        .back-button:hover {
+            background: var(--secondary-blue);
+            color: white;
+        }
+
+        .left-column > *,
+        .right-column > * {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(16, 42, 67, 0.12);
+            border-radius: 22px;
+            box-shadow: 0 18px 40px rgba(16, 42, 67, 0.08);
+        }
+
+        .representative-info,
+        .biography,
+        .portrait-container,
+        .charts-section,
+        .district-map-container {
+            padding: 1.25rem;
+        }
+
+        .representative-info h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            letter-spacing: -0.03em;
+            color: #102a43;
+        }
+
+        .party-badge,
+        .btn,
+        .claim-district-btn,
+        .edit-biography-btn,
+        .unclaim-district-btn {
+            border-radius: 999px;
+        }
+
+        .edit-biography-btn {
+            margin-left: auto;
+            white-space: nowrap;
+            padding: 0.7rem 1rem;
+            box-shadow: none;
+        }
+
+        .district-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+
+        .unclaim-district-btn {
+            display: none;
+        }
+
+        .district-stats {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .stat-item,
+        .chart-wrapper {
+            background: #f8fafc;
+            border-radius: 18px;
+            border: 1px solid rgba(16, 42, 67, 0.08);
+            padding: 1rem;
+        }
+
+        .biography-container {
+            background: #f8fafc;
+            border-radius: 18px;
+            border: 1px solid rgba(16, 42, 67, 0.08);
+            padding: 1rem;
+        }
+
+        .biography-content {
+            line-height: 1.7;
+            color: #334e68;
+        }
+
+        .biography-header {
+            align-items: flex-start;
+            margin-bottom: 1.15rem;
+        }
+
+        .biography-title-group {
+            display: grid;
+            gap: 0.2rem;
+        }
+
+        .biography-kicker {
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--secondary-blue);
+        }
+
+        .district-map-container,
+        #districtMap {
+            min-height: 360px;
+            overflow: hidden;
+        }
+
+        .portrait-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #representativePortrait {
+            width: min(100%, 360px);
+            aspect-ratio: 4 / 5;
+            object-fit: cover;
+            border-radius: 24px;
+            border: 4px solid rgba(209, 169, 91, 0.7);
+            box-shadow: 0 18px 42px rgba(16, 42, 67, 0.14);
+        }
+
+        @media (max-width: 980px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .right-column {
+                order: -1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -726,7 +910,12 @@
                     </div>
                 </div>
                 <div class="biography">
-                    <h2>Biography</h2>
+                    <div class="biography-header">
+                        <div class="biography-title-group">
+                            <span class="biography-kicker">Representative Profile</span>
+                            <h2>Biography</h2>
+                        </div>
+                    </div>
                     <div class="biography-container">
                         <div class="biography-content" id="biographyContent">
                             <p id="biographyText"></p>
@@ -835,6 +1024,7 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="app-config.js"></script>
     <script src="district.js"></script>
     <script>
     function formatText(command) {
@@ -862,7 +1052,7 @@
         const biography = document.getElementById('biographyEditor').innerHTML;
         
         try {
-            const response = await fetch('/api/update-biography', {
+            const response = await fetch(`${window.APP_CONFIG.apiBase}/api/update-biography`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
