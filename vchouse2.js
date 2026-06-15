@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let allDistricts = [];
     let representativesData = {};
     const districtLayers = new Map();
-    const API_URL = window.APP_CONFIG.apiUrl('/api');
 
     // Load representatives data
     fetch('representatives_new.json')
